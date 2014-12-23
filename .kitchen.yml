@@ -1,0 +1,24 @@
+# encoding: UTF-8
+---
+driver:
+  name: vagrant
+
+provisioner:
+  name: chef_zero
+  require_chef_omnibus: true
+
+platforms:
+  - name: centos-6.5
+
+suites:
+  - name: default
+    run_list:
+      - recipe[test_fixtures::devreporter]
+      - recipe[odsee::install]
+    attributes:
+
+  - name: example
+    run_list:
+      - recipe[test_fixtures::devreporter]
+      - recipe[odsee::example]
+    attributes:

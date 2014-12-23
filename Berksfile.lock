@@ -1,0 +1,22 @@
+DEPENDENCIES
+  garcon
+    path: ../../../../git/cookbooks/garcon
+  odsee
+    path: .
+    metadata: true
+  sudo (~> 2.7.1)
+  test_fixtures
+    path: test/fixtures/cookbooks/test_fixtures
+
+GRAPH
+  build-essential (2.1.3)
+  chef_handler (1.1.6)
+  garcon (0.7.9)
+    build-essential (>= 2.1.3)
+    chef_handler (>= 1.1.6)
+  odsee (0.1.0)
+    chef_handler (~> 1.1.6)
+    garcon (~> 0.7.9)
+  sudo (2.7.1)
+  test_fixtures (0.1.0)
+    chef_handler (>= 0.0.0)
