@@ -23,23 +23,23 @@ template node[:odsee][:pwd_file] do
   action :create
 end
 
-dscc_setup :ads_create do
+dsccsetup :ads_create do
   pwd_file node[:odsee][:pwd_file]
   action :ads_create
 end
 
-dscc_agent :create do
+dsccagent :create do
   pwd_file node[:odsee][:pwd_file]
   action :create
 end
 
-dscc_registry '/opt/dsee7/var/dcc/agent' do
+dsccreg '/opt/dsee7/var/dcc/agent' do
   pwd_file node[:odsee][:pwd_file]
   agent_pwd_file node[:odsee][:agent_pwd_file]
   action :add_agent
 end
 
-dscc_agent :start do
+dsccagent :start do
   pwd_file node[:odsee][:pwd_file]
   action :start
 end
@@ -55,7 +55,7 @@ dsconf 'dc=example,dc=com' do
   action [:create_suffix, :import]
 end
 
-dscc_registry '/opt/dsInst' do
+dsccreg '/opt/dsInst' do
   pwd_file node[:odsee][:pwd_file]
   agent_pwd_file node[:odsee][:agent_pwd_file]
   notifies :delete, "template[#{node[:odsee][:pwd_file]}]", :immediately
