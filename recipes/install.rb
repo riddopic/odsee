@@ -7,34 +7,30 @@
 
 single_include 'garcon::default'
 
-pkgs = Concurrent::Promise.execute do
-  %w(gtk2-engines lynx openldap openldap-devel).each { |pkg| package pkg }
-
-  multiarch = %w(gtk2 libgcc glibc)
-
-  archs = node[:platform_version].to_i >= 6 ? %w(x86_64 i686) : %w(x86_64 i386)
-
-  multiarch.each do |pkg|
-    archs.each do |arch|
-      yum_package pkg do
-        arch arch
+concurrent :threads do
+  block do
+    %w(gtk2-engines).each { |pkg| package pkg }
+    multiarch = %w(gtk2 libgcc glibc)
+    archs = %w(x86_64 i686)
+    multiarch.each do |pkg|
+      archs.each do |arch|
+        yum_package pkg do
+          arch arch
+        end
       end
     end
   end
 end
 
-chef_gem('net-ldap') { action :nothing }.run_action(:install)
-require 'net/ldap' unless defined?(Net::LDAP)
-
-::Chef::Recipe.send(:include, Odsee::Helpers)
-
-zip_file node[:odsee][:source] do
-  destination node[:odsee][:install_dir]
+zip_file node[:odsee][:install_dir] do
+  checksum node[:odsee][:source][:checksum]
+  source node[:odsee][:source][:filename]
+  overwrite true
   remove_after true
   not_if {
-    ::File.exist?(::File.join(node[:odsee][:install_dir], 'dsee7/bin/ldif'))
+    ::File.exists?(::File.join(node[:odsee][:install_dir], 'dsee7/bin/dsconf'))
   }
   action :unzip
 end
 
-timers_for([pkgs])
+concurrent(:threads) { action :join }

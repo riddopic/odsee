@@ -81,7 +81,80 @@ VirtualBox or VMware.
 
 ## Usage
 
-Ah, the good stuff.... Need to fill this in...
+To install the Oracle Directory Server include the install recipe in your run
+list:
+
+    include_recipe 'odsee::install'
+
+An example recipe that also configures the Directory Server using the included 
+providers 
+
+    # Sample example.com Directory Server configuration.
+    single_include 'odsee::default'
+    
+    require 'tempfile'
+    require 'securerandom' unless defined?(SecureRandom)
+    
+    node.set_unless[:odsee][:dsm_password] = pwd_hash(SecureRandom.hex)[0..12]
+    node.set_unless[:odsee][:agent_password] = node[:odsee][:dsm_password]
+    node.save unless Chef::Config[:solo]
+    
+    tmp_file = Tempfile.new(SecureRandom.hex(3))
+    password_file = tmp_file.path
+    
+    template password_file do
+      source 'password.erb'
+      sensitive true
+      owner 'root'
+      group 'root'
+      mode 00400
+      action :create
+      notifies :create, 'ruby_block[unlink]'
+    end
+    
+    ruby_block :unlink do
+      block { tmp_file.unlink }
+      action :nothing
+    end
+    
+    odsee_dsccsetup :ads_create do
+      pwd_file password_file
+      action :ads_create
+    end
+    
+    odsee_dsccagent :create do
+      pwd_file password_file
+      action :create
+    end
+    
+    odsee_dsccreg '/opt/dsee7/var/dcc/agent' do
+      pwd_file password_file
+      agent_pwd_file password_file
+      action :add_agent
+    end
+    
+    odsee_dsccagent :start do
+      pwd_file password_file
+      action :start
+    end
+    
+    odsee_dsadm '/opt/dsInst' do
+      pwd_file password_file
+      action [:create, :start]
+    end
+    
+    odsee_dsconf 'dc=example,dc=com' do
+      pwd_file password_file
+      ldif ::File.join(node[:odsee][:install_dir], 'dsee7/resources/ldif/Example.ldif')
+      action [:create_suffix, :import]
+    end
+    
+    odsee_dsccreg '/opt/dsInst' do
+      pwd_file password_file
+      agent_pwd_file password_file
+      action :add_server
+    end
+
 
 ## Attributes
 

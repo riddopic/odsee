@@ -7,57 +7,56 @@
 
 single_include 'odsee::default'
 
+require 'tempfile'
 require 'securerandom' unless defined?(SecureRandom)
 
-node.set_unless[:odsee][:dsm_password] = create_hash(SecureRandom.hex)[0..12]
-node.set_unless[:odsee][:agent_password] = node[:odsee][:dsm_password]
+node.set_unless[:odsee][:admin_password] = pwd_hash(SecureRandom.hex)[0..12]
+node.set_unless[:odsee][:agent_password] = pwd_hash(SecureRandom.hex)[0..12]
 node.save unless Chef::Config[:solo]
 
-template node[:odsee][:pwd_file] do
-  source 'password.erb'
-  sensitive true
-  owner 'root'
-  group 'root'
-  mode 00400
-  notifies :delete, "template[#{node[:odsee][:pwd_file]}]"
-  action :create
-end
+# tmp_file = Tempfile.new(SecureRandom.hex(3))
+# password_file = tmp_file.path
+#
+# template password_file do
+#   source 'password.erb'
+#   sensitive true
+#   owner 'root'
+#   group 'root'
+#   mode 00400
+#   action :create
+#   notifies :create, 'ruby_block[unlink]'
+# end
 
-dsccsetup :ads_create do
-  pwd_file node[:odsee][:pwd_file]
+# ruby_block :unlink do
+#   block { tmp_file.unlink }
+#   action :nothing
+# end
+
+odsee_dsccsetup :ads_create do
   action :ads_create
 end
 
-dsccagent :create do
-  pwd_file node[:odsee][:pwd_file]
+odsee_dsccagent :create do
   action :create
 end
 
-dsccreg '/opt/dsee7/var/dcc/agent' do
-  pwd_file node[:odsee][:pwd_file]
-  agent_pwd_file node[:odsee][:agent_pwd_file]
+odsee_dsccreg '/opt/dsee7/var/dcc/agent' do
   action :add_agent
 end
 
-dsccagent :start do
-  pwd_file node[:odsee][:pwd_file]
+odsee_dsccagent :start do
   action :start
 end
 
-dsadm '/opt/dsInst' do
-  pwd_file node[:odsee][:pwd_file]
+odsee_dsadm '/opt/dsInst' do
   action [:create, :start]
 end
 
-dsconf 'dc=example,dc=com' do
-  pwd_file node[:odsee][:pwd_file]
+odsee_dsconf 'dc=example,dc=com' do
   ldif ::File.join(node[:odsee][:install_dir], 'dsee7/resources/ldif/Example.ldif')
   action [:create_suffix, :import]
 end
 
-dsccreg '/opt/dsInst' do
-  pwd_file node[:odsee][:pwd_file]
-  agent_pwd_file node[:odsee][:agent_pwd_file]
-  notifies :delete, "template[#{node[:odsee][:pwd_file]}]", :immediately
+odsee_dsccreg '/opt/dsInst' do
   action :add_server
 end
