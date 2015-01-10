@@ -239,7 +239,7 @@ GEM
     rb-fsevent (0.9.4)
     rb-inotify (0.9.5)
       ffi (>= 0.5.0)
-    redcarpet (3.2.2)
+    redcarpet (2.1.1)
     rest-client (1.6.7)
       mime-types (>= 1.16)
     retryable (2.0.0)
@@ -320,6 +320,9 @@ GEM
     wmi-lite (1.0.0)
     yajl-ruby (1.2.1)
     yard (0.8.7.6)
+    yard-chef (1.0.0)
+      redcarpet (~> 2.1.1)
+      yard (~> 0.8)
     yard-redcarpet-ext (0.0.3)
       yard (~> 0.8.0)
 
@@ -350,4 +353,5 @@ DEPENDENCIES
   vagrant-chef-zero
   vagrant-omnibus
   yard
+  yard-chef
   yard-redcarpet-ext

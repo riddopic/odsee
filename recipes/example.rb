@@ -1,62 +1,60 @@
 # encoding: UTF-8
 #
-# Author: Stefano Harding <sharding@trace3.com>
 # Cookbook Name:: odsee
-# Recipe:: example
+# Cookbook:: example
+#
+# Author: Stefano Harding <riddopic@gmail.com>
+#
+# Copyright (C) 2014-2015 Stefano Harding
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 #
 
 single_include 'odsee::default'
 
-require 'tempfile'
 require 'securerandom' unless defined?(SecureRandom)
+monitor.synchronize do
+  node.set_unless[:odsee][:admin_password] = pwd_hash(SecureRandom.hex)[0..12]
+  node.set_unless[:odsee][:agent_password] = pwd_hash(SecureRandom.hex)[0..12]
+  node.set_unless[:odsee][:cert_password]  = pwd_hash(SecureRandom.hex)[0..12]
+  node.save unless Chef::Config[:solo]
+end
 
-node.set_unless[:odsee][:admin_password] = pwd_hash(SecureRandom.hex)[0..12]
-node.set_unless[:odsee][:agent_password] = pwd_hash(SecureRandom.hex)[0..12]
-node.save unless Chef::Config[:solo]
-
-# tmp_file = Tempfile.new(SecureRandom.hex(3))
-# password_file = tmp_file.path
-#
-# template password_file do
-#   source 'password.erb'
-#   sensitive true
-#   owner 'root'
-#   group 'root'
-#   mode 00400
-#   action :create
-#   notifies :create, 'ruby_block[unlink]'
-# end
-
-# ruby_block :unlink do
-#   block { tmp_file.unlink }
-#   action :nothing
-# end
-
-odsee_dsccsetup :ads_create do
+dsccsetup :ads_create do
   action :ads_create
 end
 
-odsee_dsccagent :create do
+dsccagent :create do
   action :create
 end
 
-odsee_dsccreg '/opt/dsee7/var/dcc/agent' do
+dsccreg '/opt/dsee7/var/dcc/agent' do
   action :add_agent
 end
 
-odsee_dsccagent :start do
+dsccagent :start do
   action :start
 end
 
-odsee_dsadm '/opt/dsInst' do
+dsadm '/opt/dsInst' do
   action [:create, :start]
 end
 
-odsee_dsconf 'dc=example,dc=com' do
+dsconf 'dc=example,dc=com' do
   ldif ::File.join(node[:odsee][:install_dir], 'dsee7/resources/ldif/Example.ldif')
   action [:create_suffix, :import]
 end
 
-odsee_dsccreg '/opt/dsInst' do
+dsccreg '/opt/dsInst' do
   action :add_server
 end

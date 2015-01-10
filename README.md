@@ -164,6 +164,93 @@ providers
 
 This cookbook includes LWRPs for managing:
 
+  * `Chef::Provider::Dsadm`: A Chef Resource and Provider that manages a
+     Directory Server instance.
+
+### dsadm
+
+The `dsadm` command is the local administration command for Directory Server
+instances. The `dsadm` command must be run from the local machine where the
+server instance is located. This command must be run by the username that is
+the operating system owner of the server instance, or by root.
+
+This cookbook comes with a Chef Resource and Provider that can be used in the
+cookbook in-place of shelling out to run the `dsadm` CLI.
+
+You use the `dsadm` resource to manage a Directory Server instance as you
+would using the command line or with a shell script although as a native Chef
+Resource.
+
+#### Syntax
+
+The syntax for using the `dsadm` resource in a recipe is as follows:
+
+    dsadm 'name' do
+      attribute 'value' # see attributes section below
+      ...
+      action :action # see actions section below
+    end
+
+Where:
+
+  * `dsadm` tells the chef-client to use the `Chef::Provider::Dsadm` provider
+     during the chef-client run;
+  * `name` is the name of the resource block; when the `path` attribute is
+     not specified as part of a recipe, `name` is also the path to the DSCC
+     server instance;
+  * `attribute` is zero (or more) of the attributes that are available for
+     this resource;
+  * `:action` identifies which steps the chef-client will take to bring the
+     node into the desired state.
+
+For example:
+
+    dsadm '/opt/dsInst' do
+      ldap_port 1234
+      ldaps_port 1233
+      action [:create, :start]
+    end
+
+#### Actions:
+
+  * `:create`: Creates a Directory Server instance.
+  * `:delete`: Deletes a Directory Server instance.
+  * `:start`: Starts a Directory Server instance.
+  * `:stop`: Stops a Directory Server instance.
+  * `:restart`: Restarts a Directory Server instance.
+  * `:backup`: Creates a backup archive of the Directory Server instance.
+
+#### Attribute Parameters:
+
+  * `no_inter`: When true does not prompt for password and/or does not prompt
+      for confirmation before performing the operation.
+  * `user_name`: The server instance owner user ID. The default is root.
+  * `group_name`: The server instance owner group ID. The default is root.
+  * `hostname`: The DSCC registry host name. The default is `nil` or blank,
+      which causes the local host name be returned by the operating system.
+  * `ldap_port`: The port for LDAP traffic. The default is `389` if `dsadm` is
+      run by the root user, or `1389` if `dsadm` is run by a non-root user.
+  * `ldaps_port`: The secure SSL port for LDAP or LDAPS traffic. The default
+     is `636` if `dsadm` is run by the root user, or `1636` if `dsadm` is run
+     by a non-root user.
+  * `dn`: Defines the Directory Manager. The default is `cn=Directory Manager`.
+  * `agent_pwd_file`: Reads the DSCC agent password from `pwd_file`.
+  * `instance_path`: Full path to the Directory Server instance.
+  * `force`: When used with stop-running-instances, the command forcibly shuts
+     down all the running server instances that are created using the same
+    `dsadm` installation. When used with stop, the command forcibly shuts down
+     the instance even if the instance is not initiated by the current
+     installation.
+  * `safe_mode`: Starts Directory Server with the configuration used at the
+     last successful startup.
+  * `schema_push`: Ensures manually modified schema is replicated to
+     consumers.
+  * `cert_pw_file`: Reads certificate database password from `cert_pw_file`.
+
+#### Examples
+
+Any HWRP examples listed here...
+
 ## Testing
 
 Ensure you have all the required prerequisite listed in the Development
@@ -299,7 +386,7 @@ Please see the [CONTRIBUTING.md](CONTRIBUTING.md).
 
 Author:: Stefano Harding <sharding@trace3.com>
 
-Copyright:: 2014, Stefano Harding
+Copyright:: 2014-2015, Stefano Harding
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
