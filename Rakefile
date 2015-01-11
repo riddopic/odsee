@@ -23,6 +23,21 @@ task :readme do
   system(*cmd)
 end
 
+# measure YARD coverage
+require 'yardstick/rake/measurement'
+Yardstick::Rake::Measurement.new(:yardstick_measure) do |measurement|
+  measurement.output = 'measurement/report.txt'
+end
+
+# verify YARD coverage
+require 'yardstick/rake/verify'
+Yardstick::Rake::Verify.new do |verify|
+  verify.threshold = 100
+end
+
+require 'inch/rake'
+Inch::Rake::Suggest.new
+
 require 'yard'
 YARD::Rake::YardocTask.new do |t|
   additional_docs = %w[ CHANGELOG.md LICENSE.md README.md ]

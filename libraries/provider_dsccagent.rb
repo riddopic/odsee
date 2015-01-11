@@ -43,7 +43,7 @@ class Chef::Provider::Dsccagent < Chef::Provider::LWRPBase
 
   # Load and return the current resource.
   #
-  # @return [Chef::Provider::Dsccagent]
+  # @return [Chef::Resource::Dsccagent]
   #
   # @api private
   def load_current_resource
@@ -70,7 +70,7 @@ class Chef::Provider::Dsccagent < Chef::Provider::LWRPBase
   #   Full path to the existing DSCC agent instance. The default path is to use:
   #   install-path/var/dcc/agent
   #
-  # @return [undefined]
+  # @return [Chef::Resource::Dsccagent]
   #
   # @api private
   def action_create
@@ -101,7 +101,7 @@ class Chef::Provider::Dsccagent < Chef::Provider::LWRPBase
   # @param [String] agent_path
   #   Path to the DSCC agent instance. Default is install-path/var/dcc/agent.
   #
-  # @return [undefined]
+  # @return [Chef::Resource::Dsccagent]
   #
   # @api private
   def action_delete
@@ -122,7 +122,7 @@ class Chef::Provider::Dsccagent < Chef::Provider::LWRPBase
   # @param [String] agent_path
   #   Path to the DSCC agent instance. Default is install-path/var/dcc/agent.
   #
-  # @return [undefined]
+  # @return [Chef::Resource::Dsccagent]
   #
   # @api private
   def action_enable_service
@@ -143,7 +143,7 @@ class Chef::Provider::Dsccagent < Chef::Provider::LWRPBase
   # @param [String] agent_path
   #   Path to the DSCC agent instance. Default is install-path/var/dcc/agent.
   #
-  # @return [undefined]
+  # @return [Chef::Resource::Dsccagent]
   #
   def action_disable_service
     if snmp?
@@ -172,7 +172,7 @@ class Chef::Provider::Dsccagent < Chef::Provider::LWRPBase
   # @param [String] agent_path
   #   Path to the DSCC agent instance. Default is install-path/var/dcc/agent.
   #
-  # @return [undefined]
+  # @return [Chef::Resource::Dsccagent]
   #
   # @api private
   def action_enable_snmp
@@ -197,7 +197,7 @@ class Chef::Provider::Dsccagent < Chef::Provider::LWRPBase
   # @param [String] agent_path
   #   Path to the DSCC agent instance. Default is install-path/var/dcc/agent.
   #
-  # @return [undefined]
+  # @return [Chef::Resource::Dsccagent]
   #
   # @api private
   def action_disable_snmp
@@ -219,7 +219,7 @@ class Chef::Provider::Dsccagent < Chef::Provider::LWRPBase
   # @param [String] agent_path
   #   Path to the DSCC agent instance. Default is install-path/var/dcc/agent.
   #
-  # @return [undefined]
+  # @return [Chef::Resource::Dsccagent]
   #
   # @api private
   def action_start
@@ -240,7 +240,7 @@ class Chef::Provider::Dsccagent < Chef::Provider::LWRPBase
   # @param [String] agent_path
   #   Path to the DSCC agent instance. Default is install-path/var/dcc/agent.
   #
-  # @return [undefined]
+  # @return [Chef::Resource::Dsccagent]
   #
   # @api private
   def action_stop

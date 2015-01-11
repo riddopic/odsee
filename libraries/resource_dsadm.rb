@@ -153,8 +153,7 @@ class Chef::Resource::Dsadm < Chef::Resource::LWRPBase
   # @return [String]
   #
   # @api private
-  attribute :dn, kind_of: String, default: lazy { node[:odsee][:dn] },
-    regex: STRING
+  attribute :dn, kind_of: String, default: lazy { node[:odsee][:dn] }
 
   # A file containing the Direcctory Service Manager password.
   #

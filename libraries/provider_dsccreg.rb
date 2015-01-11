@@ -55,18 +55,15 @@ class Chef::Provider::Dsccreg < Chef::Provider::LWRPBase
   #
   # @param [String] text
   #   Used to provide an optional description for the agent instance.
-  #
   # @param [String, Integer] hostname
   #   The DSCC registry host name or IP address.
-  #
   # @param [String] agent_pw_file
   #   Uses `password` from `agent_pw_file` file to access agent configuration.
-  #
   # @param [String] agent_path
   #   Full path to the existing DSCC agent instance. The default path is to use:
   #   `install-path/var/dcc/agent`.
   #
-  # @return [undefined]
+  # @return [Chef::Provider::Dsccreg]
   #
   # @api private
   action :add_agent do
@@ -96,15 +93,13 @@ class Chef::Provider::Dsccreg < Chef::Provider::LWRPBase
   #
   # @param [String, Integer] hostname
   #   The DSCC registry host name or IP address.
-  #
   # @param [TrueClass, FalseClass] force
   #   Forces removal of the agent instance from the DSCC registry.
-  #
   # @param [String] agent_path
   #   Full path to the existing DSCC agent instance. The default path is to use:
   #   install-path/var/dcc/agent.
   #
-  # @return [undefined]
+  # @return [Chef::Provider::Dsccreg]
   #
   # @api private
   action :remove_agent do
@@ -127,24 +122,19 @@ class Chef::Provider::Dsccreg < Chef::Provider::LWRPBase
   # @param [String] dn
   #   Use the specified bind DN to bind to the instance specified by
   #   instance-path. By default, the dsccreg command uses cn=Directory Manager.
-  #
   # @param [String] admin_pw_file
   #   Uses `password` from `admin_pw_file` file to access agent configuration.
-  #
   # @param [String] text
   #   Used to provide an optional description for the agent instance.
-  #
   # @param [String, Integer] hostname
   #   The DSCC registry host name or IP address.
-  #
   # @param [Integer] agent_port
   #   Specifies port as the DSCC agent port to use for communicating with this
   #   server instance.
-  #
   # @param [String] INST_PATH
   #   Full path to the server instance.
   #
-  # @return [undefined]
+  # @return [Chef::Provider::Dsccreg]
   #
   # @api private
   action :add_server do
@@ -176,17 +166,14 @@ class Chef::Provider::Dsccreg < Chef::Provider::LWRPBase
   # @param [String] dn
   #   Use the specified bind DN to bind to the instance specified by
   #   instance-path. By default, the dsccreg command uses cn=Directory Manager.
-  #
   # @param [String] admin_pw_file
   #   Uses `password` from `admin_pw_file` file to access agent configuration.
-  #
   # @param [String, Integer] hostname
   #   The DSCC registry host name or IP address.
-  #
   # @param [String] inst_path
   #   Full path to the server instance.
   #
-  # @return [undefined]
+  # @return [Chef::Provider::Dsccreg]
   #
   # @api private
   action :remove_server do
@@ -203,6 +190,7 @@ class Chef::Provider::Dsccreg < Chef::Provider::LWRPBase
           if ::File.exist?(new_resource.agent_pw_file.split.last)
             Chef::Log.debug "Removing Direcctory Service Admin password file"
           ::File.unlink new_resource.agent_pw_file.split.last
+          end
         end
       end
       new_resource.updated_by_last_action(true)

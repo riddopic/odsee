@@ -92,8 +92,7 @@ class Chef::Resource::Dsccreg < Chef::Resource::LWRPBase
   # @return [String, Integer, nil]
   #
   # @api private
-  attribute :hostname, kind_of: [String, Integer], default: nil,
-    regex: FQDN_VALID_REGEX
+  attribute :hostname, kind_of: [String, Integer], default: nil
 
   # A file containing the DSCC agent password.
   #
@@ -142,10 +141,8 @@ class Chef::Resource::Dsccreg < Chef::Resource::LWRPBase
   # @return [String]
   #
   # @api private
-  attribute :dn, kind_of: String,
-    default: lazy { node[:odsee][:dn] },
-    regex: STRING
-
+  attribute :dn, kind_of: String, default: lazy { node[:odsee][:dn] }
+  
   # A file containing the Direcctory Service Manager password.
   #
   # @param [String] file

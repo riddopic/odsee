@@ -7,10 +7,13 @@ gem 'serverspec'
 group :development do
   gem 'knife-cookbook-doc'
 
+  gem 'inch'
   gem 'yard'
+  gem 'yardstick'
   gem 'yard-redcarpet-ext'
   gem 'redcarpet'
   gem 'github-markup'
+  gem 'did_you_mean'
 
   gem 'guard'
   gem 'guard-shell'

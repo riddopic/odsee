@@ -50,11 +50,11 @@ class Chef::Resource::Dsccsetup < Chef::Resource::LWRPBase
   # @return [undefined]
   #
   # @api private
-  attribute :name, kind_of: String, name_attribute: true
+  attribute :name, kind_of: [String, Symbol], name_attribute: true
 
   # A file containing the Direcctory Service Manager password.
   #
-  # @param [String] file
+  # @param [String] admin_pw_file
   #   File to use to store the Direcctory Service Manager password.
   #
   # @return [String]

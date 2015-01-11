@@ -120,3 +120,12 @@ default[:odsee][:schema_push] = false
 # used with stop, the command forcibly shuts down the instance even if the
 # instance is not initiated by the current installation.
 default[:odsee][:force] = false
+
+# Boolean, used to specify if the `create_suffix` command should not create a
+# top entry for the suffix. By default, a top-level entry is created when a new
+# suffix is created (on the condition that the suffix starts with `dc=, c=, o=
+# or ou=`). The default is false.
+default[:odsee][:no_top_entry] = false
+
+
+

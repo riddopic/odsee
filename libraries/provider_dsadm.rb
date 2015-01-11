@@ -26,7 +26,7 @@
 # Server instance as a native Chef resource. With it you can create, delete,
 # start, stop and backup local DSCC instances.
 #
-class Chef::Provider::Dsadm < Chef::Provider
+class Chef::Provider::Dsadm < Chef::Provider::LWRPBase
   include Odsee
 
   use_inline_resources if defined?(:use_inline_resources)
@@ -42,7 +42,7 @@ class Chef::Provider::Dsadm < Chef::Provider
 
   # Load and return the current resource.
   #
-  # @return [<Chef::Provider::Dsadm>]
+  # @return [Chef::Resource::Dsadm]
   #
   # @api private
   def load_current_resource
@@ -93,7 +93,7 @@ class Chef::Provider::Dsadm < Chef::Provider
   # @param [String] instance_path
   #   Full path to the Directory Server instance.
   #
-  # @return [undefined]
+  # @return [Chef::Resource::Dsadm]
   #
   # @api private
   def action_create
@@ -130,7 +130,7 @@ class Chef::Provider::Dsadm < Chef::Provider
   # @param [String] instance_path
   #   Full path to the Directory Server instance.
   #
-  # @return [undefined]
+  # @return [Chef::Resource::Dsadm]
   #
   # @api private
   def action_delete
@@ -164,7 +164,7 @@ class Chef::Provider::Dsadm < Chef::Provider
   # @param [String] instance_path
   #   Full path to the Directory Server instance.
   #
-  # @return [undefined]
+  # @return [Chef::Resource::Dsadm]
   #
   # @api private
   def action_start
@@ -196,7 +196,7 @@ class Chef::Provider::Dsadm < Chef::Provider
   # @param [String] instance_path
   #   Full path to the Directory Server instance.
   #
-  # @return [undefined]
+  # @return [Chef::Resource::Dsadm]
   #
   # @api private
   def action_stop
@@ -227,7 +227,7 @@ class Chef::Provider::Dsadm < Chef::Provider
   # @param [String] instance_path
   #   Full path to the Directory Server instance.
   #
-  # @return [undefined]
+  # @return [Chef::Resource::Dsadm]
   #
   # @api private
   def action_stop

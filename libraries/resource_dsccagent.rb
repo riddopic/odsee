@@ -37,7 +37,7 @@ class Chef::Resource::Dsccagent < Chef::Resource::LWRPBase
   actions :create, :delete, :enable_service, :disable_service, :enable_snmp,
           :disable_snmp, :start, :stop
   default_action :nothing
-  
+
   state_attrs :exists, :state, :snmp, :info
   provider_base Chef::Provider::Dsccsetup
 
@@ -112,7 +112,7 @@ class Chef::Resource::Dsccagent < Chef::Resource::LWRPBase
   attribute :agent_path, kind_of: String, name_attribute: true,
     default: lazy { node[:odsee][:agent_path].call },
     callbacks: { 'You must specify a valid directory!' =>
-      ->(path) { ::File.directory?(path) }}
+      ->(path) { ::File.directory?(path.to_s) }}
 
   # Boolean, true if SNMP version 3 should be used, otherwise false.
   #

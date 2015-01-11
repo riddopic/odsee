@@ -51,7 +51,8 @@ dsadm '/opt/dsInst' do
 end
 
 dsconf 'dc=example,dc=com' do
-  ldif ::File.join(node[:odsee][:install_dir], 'dsee7/resources/ldif/Example.ldif')
+  ldif_file ::File.join(node[:odsee][:install_dir],
+                        'dsee7/resources/ldif/Example.ldif')
   action [:create_suffix, :import]
 end
 

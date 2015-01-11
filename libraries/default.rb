@@ -28,6 +28,76 @@ module Odsee
   #
   module Resource
 
+    # Matches on a string.
+    STRING_VALID_REGEX = /\A[^\\\/\:\*\?\<\>\|]+\z/
+
+    # Matches on a file mode.
+    FILE_MODE_VALID_REGEX = /^0?\d{3,4}$/
+
+    # Matches on a MD5/SHA-1/256 checksum.
+    CHECKSUM_VALID_REGEX = /^[0-9a-f]{32}$|^[a-zA-Z0-9]{40,64}$/
+
+    # Matches on a URL/URI with a archive file link.
+    URL_ARCH_VALID_REGEX = /^(file|http|https?):\/\/.*(gz|tar.gz|tgz|bin|zip)$/
+
+    # Matches on a FQDN like name (does not validate FQDN).
+    FQDN_VALID_REGEX = /^(?:(?:[0-9a-zA-Z_\-]+)\.){2,}(?:[0-9a-zA-Z_\-]+)$/
+
+    # Matches on a valid IPV4 address.
+    IPV4_VALID_REGEX = /\b(25[0-5]|2[0-4]\d|1\d\d|
+                        [1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}\b/
+
+    # Matches on port ranges 0 to 1023.
+    VALID_PORTS_REGEX = /^(102[0-3]|10[0-1]\d|[1-9][0-9]{0,2}|0)$/
+
+    # Matches on any port from 0 to 65_535.
+    PORTS_ALL_VALID_REGEX = /^(6553[0-5]|655[0-2]\d|65[0-4]\d\d|6[0-4]\d{3}|
+                             [1-5]\d{4}|[1-9]\d{0,3}|0)$/
+
+    # Boolean, true if port number is within range, otherwise raises a
+    # Exceptions::InvalidPort.
+    #
+    # @param [Integer] port
+    # @param [Range<Integer>] range
+    #
+    # @return [Trueclass]
+    #
+    # @raise [Exceptions::InvalidPort]
+    #
+    def valid_port?(port, range)
+      (range === port) ? true : (fail Exceptions::InvalidPort, port, range)
+    end
+
+    # Validate the hostname, returns the IP address if valid, raises
+    # Exceptions::InvalidHost if not
+    #
+    # @param [String] host
+    #
+    # @return [Integer]
+    #
+    # @raise [Exceptions::InvalidHost]
+    #
+    def valid_host?(host)
+      IPSocket::getaddress(host)
+    rescue
+      fail Exceptions::InvalidHost, host
+    end
+
+    # Validate that the path specified is a file or directory, will raise
+    # Exceptions::InvalidFilePath if not
+    #
+    # @param [String] path
+    #
+    # @return [TrueClass]
+    #
+    # @raise [Exceptions::InvalidFilePath]
+    #
+    def valid_path?(path)
+      unless ::File.exist?(path) || ::File.directory?(path)
+        fail Exceptions::InvalidPath, path
+      end
+    end
+
     # @return [String] tmp_file
     # @api private
     def tmp_file
@@ -118,4 +188,48 @@ module Odsee
     end
   end
   private_class_method :included
+
+  # Generic Namespace Exceptions class
+  #
+  class Exceptions
+    # A custom exception class for InvalidPort methods
+    #
+    class InvalidPort < ArgumentError
+
+      # Construct a new Exception object, passing in any arguments
+      # @param [Integer] port
+      # @param [Range<Integer>] range
+      # @return [Exceptions::InvalidPort]
+      # @api private
+      def initialize(port, range)
+        super "`#{port}` is not within the valid range of `#{range}`"
+      end
+    end
+
+    # A custom exception class for InvalidPort methods
+    #
+    class InvalidHost < ArgumentError
+
+      # Construct a new Exception object, passing in any arguments
+      # @param [String] host
+      # @return [Exceptions::InvalidHost]
+      # @api private
+      def initialize(host)
+        super "unable to validate `#{host}` by IP address"
+      end
+    end
+
+    # A custom exception class for InvalidPort methods
+    #
+    class InvalidFilePath < ArgumentError
+
+      # Construct a new Eption object, passing in any arguments
+      # @param [String] path
+      # @return [Exceptions::InvalidFilePath]
+      # @api private
+      def initialize(path)
+        super "unable to validate if `#{path}` is a file or directory"
+      end
+    end
+  end
 end

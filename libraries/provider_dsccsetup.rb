@@ -47,7 +47,7 @@ class Chef::Provider::Dsccsetup < Chef::Provider::LWRPBase
 
   # Load and return the current resource.
   #
-  # @return [Chef::Provider::Dsccsetup]
+  # @return [Chef::Resource::Dsccsetup]
   #
   # @api private
   def load_current_resource
@@ -83,7 +83,7 @@ class Chef::Provider::Dsccsetup < Chef::Provider::LWRPBase
   # @param [Integer] registry_ldaps_port
   #   The port number to use for LDAPS. The default is 3999.
   #
-  # @return [undefined]
+  # @return [Chef::Resource::Dsccsetup]
   #
   # @api private
   def action_ads_create
@@ -99,11 +99,11 @@ class Chef::Provider::Dsccsetup < Chef::Provider::LWRPBase
 
           Chef::Log.info "DSCC registry initialized for #{new_resource}"
         ensure
-          lock.exit
           if ::File.exist?(new_resource.admin_pw_file.split.last)
             Chef::Log.debug "Removing Direcctory Service Manager password file"
             ::File.unlink new_resource.admin_pw_file.split.last
           end
+          lock.exit
         end
         new_resource.updated_by_last_action(true)
       end
@@ -120,7 +120,7 @@ class Chef::Provider::Dsccsetup < Chef::Provider::LWRPBase
   #
   # @return [undefined]
   #
-  # @api private
+  # @return [Chef::Resource::Dsccsetup]
   def action_ads_delete
     if exists?
       converge_by "Deleting DSCC registry for #{new_resource}" do
@@ -138,6 +138,25 @@ class Chef::Provider::Dsccsetup < Chef::Provider::LWRPBase
 
   def do_prerequisite
     lock.synchronize do
+      [node[:odsee][:registry_path], node[:odsee][:agent_path]].each do |dir|
+        directory dir.call do
+          owner node[:odsee][:dsadm][:user_name]
+          group node[:odsee][:dsadm][:group_name]
+          mode 00755
+          action :create
+        end
+      end
+
+      zip_file node[:odsee][:install_dir] do
+        checksum node[:odsee][:source][:checksum]
+        source node[:odsee][:source][:filename]
+        overwrite true
+        remove_after true
+        not_if { ::File.directory?(node[:odsee][:registry_path].call) }
+        not_if { ::File.directory?(node[:odsee][:agent_path].call) }
+        action :unzip
+      end
+
       %w[gtk2-engines].each do |pkg|
         package(pkg) { action :nothing }.run_action(:install)
       end

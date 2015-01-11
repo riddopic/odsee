@@ -109,7 +109,8 @@ module Odsee
     [:dsadm, :dsccagent, :dsccreg, :dsccsetup, :dsconf].each do |cmd|
       define_method(cmd) do |*args|
         subcmd = Hoodie::Inflections.dasherize(args.shift.to_s)
-        (run ||= []) << which(cmd.to_s) << subcmd << args
+        (run ||= []) << which(cmd.to_s) << subcmd.to_s << args
+        announce "Execute on node:::--> #{run}"
         Chef::Log.info shell_out!(run.flatten.join(' ')).stdout
       end
     end
