@@ -23,11 +23,9 @@
 # Include hooks to extend with class and instance methods.
 #
 module Odsee
-
   # Include hooks to extend Resource with class and instance methods.
   #
   module Resource
-
     # Matches on a string.
     STRING_VALID_REGEX = /\A[^\\\/\:\*\?\<\>\|]+\z/
 
@@ -53,48 +51,93 @@ module Odsee
     # Matches on any port from 0 to 65_535.
     PORTS_ALL_VALID_REGEX = /^(6553[0-5]|655[0-2]\d|65[0-4]\d\d|6[0-4]\d{3}|
                              [1-5]\d{4}|[1-9]\d{0,3}|0)$/
+    class << self
+      # Helper method to validate port numbers
+      #
+      # @yield [Integer]
+      # @return [Trueclass]
+      # @raise [Odsee::Exceptions::InvalidPort]
+      # @api private
+      def port?
+        ->(port) { validate_port(port) }
+      end
 
-    # Boolean, true if port number is within range, otherwise raises a
-    # Exceptions::InvalidPort.
-    #
-    # @param [Integer] port
-    # @param [Range<Integer>] range
-    #
-    # @return [Trueclass]
-    #
-    # @raise [Exceptions::InvalidPort]
-    #
-    def valid_port?(port, range)
-      (range === port) ? true : (fail Exceptions::InvalidPort, port, range)
-    end
+      # Boolean, true if port number is within range, otherwise raises a
+      # Exceptions::InvalidPort
+      #
+      # @param [Integer] port
+      # @param [Range<Integer>] range
+      # @return [Trueclass]
+      # @raise [Odsee::Exceptions::InvalidPort]
+      # @api private
+      def validate_port(port, range = 0..65_535)
+        (range === port) ? true : (fail InvalidPort.new port, range)
+      end
 
-    # Validate the hostname, returns the IP address if valid, raises
-    # Exceptions::InvalidHost if not
-    #
-    # @param [String] host
-    #
-    # @return [Integer]
-    #
-    # @raise [Exceptions::InvalidHost]
-    #
-    def valid_host?(host)
-      IPSocket::getaddress(host)
-    rescue
-      fail Exceptions::InvalidHost, host
-    end
+      # Helper method to validate host name
+      #
+      # @yield [Integer]
+      # @return [Trueclass]
+      # @raise [Odsee::Exceptions::InvalidHost]
+      # @api private
+      def host?
+        ->(host) { validate_host(name) }
+      end
 
-    # Validate that the path specified is a file or directory, will raise
-    # Exceptions::InvalidFilePath if not
-    #
-    # @param [String] path
-    #
-    # @return [TrueClass]
-    #
-    # @raise [Exceptions::InvalidFilePath]
-    #
-    def valid_path?(path)
-      unless ::File.exist?(path) || ::File.directory?(path)
-        fail Exceptions::InvalidPath, path
+      # Validate the hostname, returns the IP address if valid, otherwise raises
+      # Exceptions::InvalidHost
+      #
+      # @param [String] host
+      # @return [Integer]
+      # @raise [Odsee::Exceptions::InvalidHost]
+      # @api private
+      def validate_host(host)
+        IPSocket.getaddress(host)
+      rescue
+        raise InvalidHost.new host
+      end
+
+      # Helper method to validate file
+      #
+      # @yield [Integer]
+      # @return [Trueclass]
+      # @raise [Odsee::Exceptions::InvalidFile]
+      # @api private
+      def file?
+        ->(file) { validate_file(file) }
+      end
+
+      # Boolean, true if file exists, otherwise raises a Exceptions::InvalidFile
+      #
+      # @param [String] file
+      # @return [Trueclass]
+      # @raise [Odsee::Exceptions::InvalidFile]
+      # @api private
+      def validate_file?(file)
+        ::File.exist?(file) ? true : (fail FileNotFound.new file)
+      end
+
+      # Helper method to validate file path
+      #
+      # @yield [Integer]
+      # @return [Trueclass]
+      # @raise [Odsee::Exceptions::InvalidFilePath]
+      # @api private
+      def path?
+        ->(path) { validate_filepath(file) }
+      end
+
+      # Validate that the path specified is a file or directory, will raise
+      # Exceptions::InvalidFilePath if not
+      #
+      # @param [String] path
+      # @return [TrueClass]
+      # @raise [Odsee::Exceptions::InvalidFilePath]
+      # @api private
+      def validate_filepath?(path)
+        unless ::File.exist?(path) || ::File.directory?(path)
+          fail PathNotFound.new path
+        end
       end
     end
 
@@ -161,8 +204,8 @@ module Odsee
 
     # Wraps shell_out in a monitor for thread safety.
     # @api private
-    __shell_out__ = self.instance_method(:shell_out!)
-    define_method(:shell_out!) do |*args, &block|
+    __shell_out__ = instance_method(:shell_out!)
+    define_method(:shell_out!) do |*args, &_block|
       lock.synchronize { __shell_out__.bind(self).call(*args) }
     end
   end
@@ -180,56 +223,14 @@ module Odsee
     if descendant < Chef::Resource
       descendant.class_exec { include Garcon::Resource }
       descendant.class_exec { include Odsee::Resource }
+      descendant.class_exec { include Odsee::Exceptions }
 
     elsif descendant < Chef::Provider
       descendant.class_exec { include Garcon::Provider }
       descendant.class_exec { include Odsee::Provider }
       descendant.class_exec { include Odsee::CliHelpers }
+      descendant.class_exec { include Odsee::Exceptions }
     end
   end
   private_class_method :included
-
-  # Generic Namespace Exceptions class
-  #
-  class Exceptions
-    # A custom exception class for InvalidPort methods
-    #
-    class InvalidPort < ArgumentError
-
-      # Construct a new Exception object, passing in any arguments
-      # @param [Integer] port
-      # @param [Range<Integer>] range
-      # @return [Exceptions::InvalidPort]
-      # @api private
-      def initialize(port, range)
-        super "`#{port}` is not within the valid range of `#{range}`"
-      end
-    end
-
-    # A custom exception class for InvalidPort methods
-    #
-    class InvalidHost < ArgumentError
-
-      # Construct a new Exception object, passing in any arguments
-      # @param [String] host
-      # @return [Exceptions::InvalidHost]
-      # @api private
-      def initialize(host)
-        super "unable to validate `#{host}` by IP address"
-      end
-    end
-
-    # A custom exception class for InvalidPort methods
-    #
-    class InvalidFilePath < ArgumentError
-
-      # Construct a new Eption object, passing in any arguments
-      # @param [String] path
-      # @return [Exceptions::InvalidFilePath]
-      # @api private
-      def initialize(path)
-        super "unable to validate if `#{path}` is a file or directory"
-      end
-    end
-  end
 end

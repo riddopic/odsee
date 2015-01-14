@@ -29,28 +29,47 @@
 class Chef::Resource::Dsccsetup < Chef::Resource::LWRPBase
   include Odsee
 
-  identity_attr :path
+  identity_attr :name
   provides :dsccsetup, os: 'linux'
   self.resource_name = :dsccsetup
 
+  # The following actions are supported:
+  #
+  # ads-create           Create the DSCC Registry
+  # ads-delete           Delete the DSCC Registry
+  # complete-patch       Performs actions required after applying a patch
+  # disable-admin-users  Disable Administrative Users feature
+  # enable-admin-users   Enable Administrative Users feature
+  # prepare-patch        Performs actions required before applying patch
+  #
   actions :ads_create, :ads_delete
+  state_attrs :created
   default_action :nothing
 
-  state_attrs :exists
   provider_base Chef::Provider::Dsccsetup
 
-  # @!attribute [rw] exists
-  #   @return [TrueClass, FalseClass] Boolean, true if the Directory Server
-  #     DSCC registry instance has been created, false otherwise.
-  attr_writer :exists
+  # Boolean, returns true if the DSCC registry has been created, otherwise false
+  #
+  # @param [TrueClass, FalseClass]
+  #
+  # @return [TrueClass, FalseClass]
+  #
+  # @api private
+  attribute :created,
+    kind_of: [TrueClass, FalseClass],
+    default: nil
 
   # A do nothing attribute, this prevents the base temporal continuum
   # gravitational tachyons from invading.
   #
-  # @return [undefined]
+  # @param [Random]
+  #
+  # @return [Random]
   #
   # @api private
-  attribute :name, kind_of: [String, Symbol], name_attribute: true
+  attribute :name,
+    kind_of: [String, Symbol],
+    name_attribute: true
 
   # A file containing the Direcctory Service Manager password.
   #
@@ -60,9 +79,9 @@ class Chef::Resource::Dsccsetup < Chef::Resource::LWRPBase
   # @return [String]
   #
   # @api private
-  attribute :admin_pw_file, kind_of: Proc, default: lazy { __admin_pw__ },
-    callbacks: { 'You must specify a valid file with the correct password!' =>
-      ->(file) { ::File.exists?(file) }}
+  attribute :admin_pw_file,
+    kind_of: Proc,
+    default: lazy { __admin_pw__ }
 
   # Specifies the port for LDAP traffic. The default is 3998.
   #
@@ -72,10 +91,9 @@ class Chef::Resource::Dsccsetup < Chef::Resource::LWRPBase
   # @return [Integer]
   #
   # @api private
-  attribute :registry_ldap_port, kind_of: String,
-    default: lazy { node[:odsee][:registry_ldap_port] },
-    callbacks: { 'You must specify a valid port!' =>
-      ->(port) { port.to_i > 0 && port.to_i < 65_535 } }
+  attribute :registry_ldap_port,
+    kind_of: String,
+    default: lazy { node[:odsee][:registry_ldap_port] }
 
   # Specifies the secure SSL port for LDAP traffic. The default is 3999.
   #
@@ -85,10 +103,9 @@ class Chef::Resource::Dsccsetup < Chef::Resource::LWRPBase
   # @return [Integer]
   #
   # @api private
-  attribute :registry_ldaps_port, kind_of: String,
-    default: lazy { node[:odsee][:registry_ldaps_port] },
-    callbacks: { 'You must specify a valid port!' =>
-      ->(port) { port.to_i > 0 && port.to_i < 65_535 } }
+  attribute :registry_ldaps_port,
+    kind_of: String,
+    default: lazy { node[:odsee][:registry_ldaps_port] }
 
   # When true does not prompt for password and/or does not prompt for
   # confirmation before performing the operation.
@@ -101,7 +118,8 @@ class Chef::Resource::Dsccsetup < Chef::Resource::LWRPBase
   # @return [TrueClass, FalseClass]
   #
   # @api private
-  attribute :no_inter, kind_of: [TrueClass, FalseClass],
+  attribute :no_inter,
+    kind_of: [TrueClass, FalseClass],
     default: lazy { node[:odsee][:no_inter] }
 
 end

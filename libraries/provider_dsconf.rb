@@ -80,12 +80,13 @@ class Chef::Provider::Dsconf < Chef::Provider::LWRPBase
       Chef::Log.info "#{new_resource} already created - nothing to do"
     else
       converge_by "Creating #{new_resource} suffix entry in the DIT" do
-        dsconf :create_suffix, new_resource._?(:hostname,     '-h'),
-                               new_resource._?(:ldap_port,    '-p'),
-                               new_resource._?(:db_name,      '-B'),
-                               new_resource._?(:db_path,      '-L'),
-                               new_resource._?(:no_top_entry, '-N'),
-                               new_resource.suffix
+        dsconf :create_suffix,
+               new_resource._?(:hostname,     '-h'),
+               new_resource._?(:ldap_port,    '-p'),
+               new_resource._?(:db_name,      '-B'),
+               new_resource._?(:db_path,      '-L'),
+               new_resource._?(:no_top_entry, '-N'),
+               new_resource.suffix
 
         Chef::Log.info "DIT entry created for #{new_resource} suffix"
       end
@@ -110,9 +111,10 @@ class Chef::Provider::Dsconf < Chef::Provider::LWRPBase
   action :delete_suffix do
     if exists?
       converge_by "Deleting #{new_resource} suffix entry from the DIT" do
-        dsconf :create_suffix, new_resource._?(:hostname,     '-h'),
-                               new_resource._?(:ldap_port,    '-p'),
-                               new_resource.suffix
+        dsconf :create_suffix,
+               new_resource._?(:hostname,  '-h'),
+               new_resource._?(:ldap_port, '-p'),
+               new_resource.suffix
 
         Chef::Log.info "DIT entry deleted for #{new_resource} suffix"
       end
@@ -207,14 +209,15 @@ class Chef::Provider::Dsconf < Chef::Provider::LWRPBase
   action :import do
     if empty_suffix?
       converge_by 'Populating suffix with LDIF data' do
-        dsconf :import, new_resource._?(:hostname,    '-H'),
-                        new_resource._?(:port,        '-p'),
-                        new_resource._?(:async,       '-a'),
-                        new_resource._?(:incremental, '-K'),
-                        new_resource._?(:opts,        '-f'),
-                        new_resource._?(:exclude_dn,  '-x'),
-                        new_resource.ldif_file,
-                        new_resource.suffix
+        dsconf :import,
+               new_resource._?(:hostname,    '-H'),
+               new_resource._?(:port,        '-p'),
+               new_resource._?(:async,       '-a'),
+               new_resource._?(:incremental, '-K'),
+               new_resource._?(:opts,        '-f'),
+               new_resource._?(:exclude_dn,  '-x'),
+               new_resource.ldif_file,
+               new_resource.suffix
 
         Chef::Log.info "#{new_resource} has been removed from the registry."
       end

@@ -29,8 +29,5 @@ zip_file node[:odsee][:install_dir] do
   remove_after true
   not_if { ::File.directory?(node[:odsee][:registry_path].call) }
   not_if { ::File.directory?(node[:odsee][:agent_path].call) }
-  not_if {
-    ::File.exist?(::File.join(node[:odsee][:install_dir], 'dsee7/bin/dsconf'))
-  }
   action :unzip
 end

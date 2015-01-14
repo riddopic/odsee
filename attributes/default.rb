@@ -127,5 +127,4 @@ default[:odsee][:force] = false
 # or ou=`). The default is false.
 default[:odsee][:no_top_entry] = false
 
-
-
+default[:odsee][:text] = "Created at #{Time.now.strftime('%A, %B %d %Y at %r')}"

@@ -28,25 +28,46 @@
 class Chef::Resource::Dsccreg < Chef::Resource::LWRPBase
   include Odsee
 
-  identity_attr :path
+  identity_attr :agent_path
   provides :dsccreg, os: 'linux'
   self.resource_name = :dsccreg
 
+  # The following actions are supported:
+  #
+  # add-agent      Add a DSCC agent instance to the DSCC registry
+  # add-server     Add a server instance to the DSCC registry
+  # remove-agent   Remove an agent instance from the DSCC registry
+  # remove-server  Remove a server instance from the DSCC registry
+  #
   actions :add_agent, :remove_agent, :add_server, :remove_server
+  state_attrs :servers, :agents
   default_action :nothing
 
-  state_attrs :server, :agent
   provider_base Chef::Provider::Dsccreg
 
-  # @!attribute [rw] exists
-  #   @return [TrueClass, FalseClass] True if the specified server instance has
-  #   been added to DSCC registry, otherwise false.
-  attr_writer :server
+  # Boolean, returns true if the server instance has been added to the DSCC
+  # registry, otherwise false
+  #
+  # @param [TrueClass, FalseClass]
+  #
+  # @return [TrueClass, FalseClass]
+  #
+  # @api private
+  attribute :servers,
+    kind_of: [TrueClass, FalseClass],
+    default: nil
 
-  # @!attribute [rw] state
-  #   @return [TrueClass, FalseClass] True if the specified agent instance has
-  #   been added to DSCC registry, otherwise false.
-  attr_writer :agent
+  # Boolean, returns true if the agent instance has been added to the DSCC
+  # registry, otherwise false
+  #
+  # @param [TrueClass, FalseClass]
+  #
+  # @return [TrueClass, FalseClass]
+  #
+  # @api private
+  attribute :agents,
+    kind_of: [TrueClass, FalseClass],
+    default: nil
 
   # Path to the DSCC server instance. Default is: `install-path/var/dcc/agent`.
   #
@@ -56,10 +77,9 @@ class Chef::Resource::Dsccreg < Chef::Resource::LWRPBase
   # @return [String]
   #
   # @api private
-  attribute :below, kind_of: String, name_attribute: true,
-    default: lazy { node[:odsee][:instance_path].call },
-    callback: { 'You must specify an empty directory' => ->(path) {
-      ::File.directory?(path) && (Dir.entries(path) - %w{ . .. }).empty? }}
+  attribute :below,
+    kind_of: String,
+    default: lazy { node[:odsee][:instance_path].call }
 
   # Path to the DSCC agent instance. Default is: `install-path/var/dcc/agent`.
   #
@@ -69,10 +89,9 @@ class Chef::Resource::Dsccreg < Chef::Resource::LWRPBase
   # @return [String]
   #
   # @api private
-  attribute :agent_path, kind_of: String,
-    default: lazy { node[:odsee][:agent_path].call },
-    callbacks: { 'You must specify a valid directory!' =>
-      ->(path) { ::File.directory?(path) }}
+  attribute :agent_path,
+    kind_of: String,
+    default: lazy { node[:odsee][:agent_path].call }
 
   # Used to provide an optional description for the agent instance.
   #
@@ -82,7 +101,9 @@ class Chef::Resource::Dsccreg < Chef::Resource::LWRPBase
   # @return [String]
   #
   # @api private
-  attribute :text, kind_of: String, default: nil
+  attribute :text,
+    kind_of: String,
+    default: lazy { "'DOB: #{Time.now.strftime('%v')}'" }
 
   # The DSCC registry host name or IP address. By default, the dsccreg command
   # uses the local host name returned by the operating system.
@@ -92,7 +113,9 @@ class Chef::Resource::Dsccreg < Chef::Resource::LWRPBase
   # @return [String, Integer, nil]
   #
   # @api private
-  attribute :hostname, kind_of: [String, Integer], default: nil
+  attribute :hostname,
+    kind_of: [String, Integer],
+    default: nil
 
   # A file containing the DSCC agent password.
   #
@@ -102,9 +125,9 @@ class Chef::Resource::Dsccreg < Chef::Resource::LWRPBase
   # @return [String]
   #
   # @api private
-  attribute :agent_pw_file, kind_of: Proc, default: lazy { __agent_pw__ },
-    callbacks: { 'You must specify a valid file with the correct password!' =>
-      ->(file) { ::File.exists?(file) }}
+  attribute :agent_pw_file,
+    kind_of: Proc,
+    default: lazy { __agent_pw__ }
 
   # Full path to the existing DSCC agent instance. The default path is to use:
   # install-path/var/dcc/agent
@@ -115,10 +138,9 @@ class Chef::Resource::Dsccreg < Chef::Resource::LWRPBase
   # @return [String]
   #
   # @api private
-  attribute :agent_path, kind_of: String, name_attribute: true,
-    default: lazy { node[:odsee][:agent_path].call },
-    callbacks: { 'You must specify a valid directory!' =>
-      ->(path) { ::File.directory?(path) }}
+  attribute :agent_path,
+    kind_of: String,
+    name_attribute: true
 
   # If the instance should be forcibly shut down. When used with
   # `stop-running-instances`, the command forcibly shuts down all the running
@@ -131,7 +153,8 @@ class Chef::Resource::Dsccreg < Chef::Resource::LWRPBase
   # @return [TrueClass, FalseClass]
   #
   # @api private
-  attribute :force, kind_of: [TrueClass, FalseClass],
+  attribute :force,
+    kind_of: [TrueClass, FalseClass],
     default: lazy { node[:odsee][:force] }
 
   # Defines the Directory Manager DN. The default is cn=Directory Manager.
@@ -141,8 +164,10 @@ class Chef::Resource::Dsccreg < Chef::Resource::LWRPBase
   # @return [String]
   #
   # @api private
-  attribute :dn, kind_of: String, default: lazy { node[:odsee][:dn] }
-  
+  attribute :dn,
+    kind_of: String,
+    default: lazy { node[:odsee][:dn] }
+
   # A file containing the Direcctory Service Manager password.
   #
   # @param [String] file
@@ -151,9 +176,9 @@ class Chef::Resource::Dsccreg < Chef::Resource::LWRPBase
   # @return [String]
   #
   # @api private
-  attribute :admin_pw_file, kind_of: Proc, default: lazy { __admin_pw__ },
-    callbacks: { 'You must specify a valid file with the correct password!' =>
-      ->(file) { ::File.exists?(file) }}
+  attribute :admin_pw_file,
+    kind_of: Proc,
+    default: lazy { __admin_pw__ }
 
   # Specifies port as the DSCC agent port to use for communicating with this
   # server instance.
@@ -164,9 +189,8 @@ class Chef::Resource::Dsccreg < Chef::Resource::LWRPBase
   # @return [Integer]
   #
   # @api private
-  attribute :agent_port, kind_of: String,
-    default: lazy { node[:odsee][:registry_ldap_port] },
-    callbacks: { 'You must specify a valid port!' =>
-      ->(port) { port.to_i > 0 && port.to_i < 65_535 } }
+  attribute :agent_port,
+    kind_of: String,
+    default: lazy { node[:odsee][:registry_ldap_port] }
 
 end

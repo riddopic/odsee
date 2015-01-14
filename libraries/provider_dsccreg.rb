@@ -28,8 +28,6 @@
 class Chef::Provider::Dsccreg < Chef::Provider::LWRPBase
   include Odsee
 
-  use_inline_resources if defined?(:use_inline_resources)
-
   # Boolean indicating if WhyRun is supported by this provider.
   #
   # @return [TrueClass, FalseClass]
@@ -39,15 +37,37 @@ class Chef::Provider::Dsccreg < Chef::Provider::LWRPBase
     true
   end
 
-  # Load and return the current resource.
+  # Reload the resource state when something changes
   #
-  # @return [Chef::Provider::Dsccreg]
+  # @return [undefined]
+  #
+  # @api private
+  def load_new_resource_state
+    if @new_resource.servers.nil?
+      @new_resource.servers(@current_resource.servers)
+    end
+    if @new_resource.agents.nil?
+      @new_resource.agents(@current_resource.agents)
+    end
+  end
+
+  # Load and return the current resource
+  #
+  # @return [Chef::Resource::Dsccreg]
+  #
+  # @raise [Odsee::Exceptions::ResourceNotFound]
   #
   # @api private
   def load_current_resource
-    @current_resource ||= Chef::Resource::Dsccreg.new(new_resource.name)
-    @current_resource.server = registry(:server, admin_pwd)
-    @current_resource.agent  = registry(:agent, admin_pwd)
+    @current_resource = Chef::Resource::Dsccreg.new(@new_resource.name)
+    @current_resource.agent_path(@new_resource.agent_path)
+
+    unless ::File.exists?(which(@resource_name.to_s))
+      raise Odsee::Exceptions::ResourceNotFound
+    end
+
+    @current_resource.servers(check_for(:servers, new_resource.agent_path))
+    @current_resource.agents(check_for(:agents, new_resource.agent_path))
     @current_resource
   end
 
@@ -67,26 +87,29 @@ class Chef::Provider::Dsccreg < Chef::Provider::LWRPBase
   #
   # @api private
   action :add_agent do
-    if exists?
+    if @current_resource.agents
       Chef::Log.info "#{new_resource} already created - nothing to do"
     else
       converge_by "Adding #{new_resource} instance to the DSCC registry" do
         begin
-          dsccreg :add_agent, new_resource._?(:text,          '-d'),
-                              new_resource._?(:hostname,      '-H'),
-                              new_resource._?(:agent_pw_file, '-G'),
-                              new_resource.agent_path
-
-          Chef::Log.info "DSCC agent instance added to the DSCC registry"
+          dsccreg :add_agent,
+                  new_resource._?(:text,          '-d'),
+                  new_resource._?(:hostname,      '-H'),
+                  new_resource._?(:agent_pw_file, '-G'),
+                  new_resource._?(:admin_pw_file, '-w'),
+                  new_resource.agent_path
         ensure
-          if ::File.exist?(new_resource.agent_pw_file.split.last)
-            Chef::Log.debug "Removing Direcctory Service Agent password file"
-            ::File.unlink new_resource.agent_pw_file.split.last
+          %w[new_resource.admin_pw_file.split.last
+             new_resource.agent_pw_file.split.last
+             new_resource.cert_pw_file.split.last].each do |__pfile__|
+            ::File.unlink(__pfile__) if ::File.exist?(__pfile__)
           end
         end
-        new_resource.updated_by_last_action(true)
+        Chef::Log.info 'DSCC agent instance added to the DSCC registry'
       end
     end
+    load_new_resource_state
+    @new_resource.agents(true)
   end
 
   # Remove a DSCC agent instance from the DSCC registry.
@@ -103,18 +126,19 @@ class Chef::Provider::Dsccreg < Chef::Provider::LWRPBase
   #
   # @api private
   action :remove_agent do
-    if exists?
+    if @current_resource.agents
       converge_by "Remove #{new_resource} instance from the registry" do
-        dsccreg :remove_agent, new_resource._?(:hostname, '-H'),
-                               new_resource._?(:force,    '-f'),
-                               new_resource.agent_path
-
+        dsccreg :remove_agent,
+                new_resource._?(:hostname, '-H'),
+                new_resource._?(:force,    '-f'),
+                new_resource.agent_path
         Chef::Log.info "#{new_resource} has been removed from the registry."
       end
-      new_resource.updated_by_last_action(true)
     else
       Chef::Log.info "#{new_resource} does not exists - nothing to do"
     end
+    load_new_resource_state
+    @new_resource.agents(false)
   end
 
   # Add a server instance to the DSCC registry.
@@ -138,27 +162,29 @@ class Chef::Provider::Dsccreg < Chef::Provider::LWRPBase
   #
   # @api private
   action :add_server do
-    if exists?
+    if @current_resource.servers
       Chef::Log.info "#{new_resource} already created - nothing to do"
     else
       converge_by "Adding server instance #{new_resource} to the registry" do
         begin
-          dsccreg :add_agent, new_resource._?(:dn,            '-B'),
-                              new_resource._?(:admin_pw_file, '-G'),
-                              new_resource._?(:text, '         -d'),
-                              new_resource._?(:agent_port,    '-H'),
-                              new_resource.INST_PATH
-
-          Chef::Log.info "Server instance added to the DSCC registry"
+          dsccreg :add_agent,
+                  new_resource._?(:dn,            '-B'),
+                  new_resource._?(:admin_pw_file, '-G'),
+                  new_resource._?(:text, '         -d'),
+                  new_resource._?(:agent_port,    '-H'),
+                  new_resource.INST_PATH
         ensure
-          if ::File.exist?(new_resource.agent_pw_file.split.last)
-            Chef::Log.debug "Removing Direcctory Service Admin password file"
-            ::File.unlink new_resource.agent_pw_file.split.last
+          %w[new_resource.admin_pw_file.split.last
+             new_resource.agent_pw_file.split.last
+             new_resource.cert_pw_file.split.last].each do |__pfile__|
+            ::File.unlink(__pfile__) if ::File.exist?(__pfile__)
           end
         end
-        new_resource.updated_by_last_action(true)
+        Chef::Log.info 'Server instance added to the DSCC registry'
       end
     end
+    load_new_resource_state
+    @new_resource.servers(true)
   end
 
   # Remove a server instance from the DSCC registry.
@@ -177,23 +203,25 @@ class Chef::Provider::Dsccreg < Chef::Provider::LWRPBase
   #
   # @api private
   action :remove_server do
-    if exists?
+    if @current_resource.servers
       converge_by "Removing server instance #{new_resource} from registry" do
         begin
-          dsccreg :remove_server, new_resource._?(:dn,            '-B'),
-                                  new_resource._?(:admin_pw_file, '-G'),
-                                  new_resource._?(:hostname,      '-d'),
-                                  new_resource.INST_PATH
-
-          Chef::Log.info "Server instance #{new_resource} has been removed."
+          dsccreg :remove_server,
+                  new_resource._?(:dn,            '-B'),
+                  new_resource._?(:admin_pw_file, '-G'),
+                  new_resource._?(:hostname,      '-d'),
+                  new_resource.INST_PATH
         ensure
-          if ::File.exist?(new_resource.agent_pw_file.split.last)
-            Chef::Log.debug "Removing Direcctory Service Admin password file"
-          ::File.unlink new_resource.agent_pw_file.split.last
+          %w[new_resource.admin_pw_file.split.last
+             new_resource.agent_pw_file.split.last
+             new_resource.cert_pw_file.split.last].each do |__pfile__|
+            ::File.unlink(__pfile__) if ::File.exist?(__pfile__)
           end
         end
+        Chef::Log.info "Server instance #{new_resource} has been removed."
       end
-      new_resource.updated_by_last_action(true)
     end
+    load_new_resource_state
+    @new_resource.servers(true)
   end
 end

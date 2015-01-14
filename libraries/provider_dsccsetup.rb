@@ -31,10 +31,9 @@ class Chef::Provider::Dsccsetup < Chef::Provider::LWRPBase
 
   def initialize(name, run_context = nil)
     super
+    @created = nil
     do_prerequisite
   end
-
-  use_inline_resources if defined?(:use_inline_resources)
 
   # Boolean indicating if WhyRun is supported by this provider.
   #
@@ -45,19 +44,34 @@ class Chef::Provider::Dsccsetup < Chef::Provider::LWRPBase
     true
   end
 
+  # Reload the resource state when something changes
+  #
+  # @return [undefined]
+  #
+  # @api private
+  def load_new_resource_state
+    if @new_resource.created.nil?
+      @new_resource.created(@current_resource.created)
+    end
+  end
+
   # Load and return the current resource.
   #
   # @return [Chef::Resource::Dsccsetup]
   #
+  # @raise [Odsee::Exceptions::ResourceNotFound]
+  #
   # @api private
   def load_current_resource
-    begin
-      @current_resource ||= Chef::Resource::Dsccsetup.new(new_resource.name)
-      @current_resource.exists = ads_created?
-      @current_resource
-    rescue
-      Chef::Log.warn "Unable to find #{@new_resource} in resource collection"
+    @current_resource = Chef::Resource::Dsccsetup.new(@new_resource.name)
+    @current_resource.name(@new_resource.name)
+
+    unless ::File.exists?(which(@resource_name.to_s))
+      raise Odsee::Exceptions::ResourceNotFound
     end
+
+    @current_resource.created(ads_created?)
+    @current_resource
   end
 
   # Initialize the DSCC registry, a local Directory Server instance for
@@ -76,10 +90,8 @@ class Chef::Provider::Dsccsetup < Chef::Provider::LWRPBase
   #
   # @param [String] admin_pw_file
   #   Use the Direcctory Service Manager password specified in file.
-  #
   # @param [Integer] registry_ldap_port
   #   The port number to use for LDAP. The default is 3998.
-  #
   # @param [Integer] registry_ldaps_port
   #   The port number to use for LDAPS. The default is 3999.
   #
@@ -87,27 +99,29 @@ class Chef::Provider::Dsccsetup < Chef::Provider::LWRPBase
   #
   # @api private
   def action_ads_create
-    if exists?
+    if @current_resource.created
       Chef::Log.info "#{new_resource} already exists - nothing to do"
     else
       converge_by "Initialize DSCC registry for #{new_resource}" do
         begin
           lock.enter
-          dsccsetup :ads_create, new_resource._?(:admin_pw_file,       '-w'),
-                                 new_resource._?(:registry_ldap_port,  '-p'),
-                                 new_resource._?(:registry_ldaps_port, '-P')
-
-          Chef::Log.info "DSCC registry initialized for #{new_resource}"
+          dsccsetup :ads_create,
+                    new_resource._?(:admin_pw_file,       '-w'),
+                    new_resource._?(:registry_ldap_port,  '-p'),
+                    new_resource._?(:registry_ldaps_port, '-P')
         ensure
-          if ::File.exist?(new_resource.admin_pw_file.split.last)
-            Chef::Log.debug "Removing Direcctory Service Manager password file"
-            ::File.unlink new_resource.admin_pw_file.split.last
+          %w[new_resource.admin_pw_file.split.last
+             new_resource.agent_pw_file.split.last
+             new_resource.cert_pw_file.split.last].each do |__pfile__|
+            ::File.unlink(__pfile__) if ::File.exist?(__pfile__)
           end
           lock.exit
         end
-        new_resource.updated_by_last_action(true)
+        Chef::Log.info "DSCC registry initialized for #{new_resource}"
       end
     end
+    load_new_resource_state
+    @new_resource.created(true)
   end
 
   # Delete the Directory Server instance used by DSCC to store configuration
@@ -122,47 +136,35 @@ class Chef::Provider::Dsccsetup < Chef::Provider::LWRPBase
   #
   # @return [Chef::Resource::Dsccsetup]
   def action_ads_delete
-    if exists?
+    if @current_resource.created
       converge_by "Deleting DSCC registry for #{new_resource}" do
         dsccsetup :ads_delete, new_resource._?(:no_inter, '-i')
-
         Chef::Log.info "DSCC registry deleted for #{new_resource}"
       end
-      new_resource.updated_by_last_action(true)
     else
       Chef::Log.info "#{new_resource} does not exists - nothing to do"
     end
+    load_new_resource_state
+    @new_resource.enabled(false)
   end
 
   private #   P R O P R I E T À   P R I V A T A   Vietato L'accesso
 
   def do_prerequisite
     lock.synchronize do
-      [node[:odsee][:registry_path], node[:odsee][:agent_path]].each do |dir|
-        directory dir.call do
-          owner node[:odsee][:dsadm][:user_name]
-          group node[:odsee][:dsadm][:group_name]
-          mode 00755
-          action :create
-        end
+      directory node[:odsee][:registry_path].call do
+        owner node[:odsee][:dsadm][:user_name]
+        group node[:odsee][:dsadm][:group_name]
+        mode 00755
+        action :create
       end
 
-      zip_file node[:odsee][:install_dir] do
-        checksum node[:odsee][:source][:checksum]
-        source node[:odsee][:source][:filename]
-        overwrite true
-        remove_after true
-        not_if { ::File.directory?(node[:odsee][:registry_path].call) }
-        not_if { ::File.directory?(node[:odsee][:agent_path].call) }
-        action :unzip
-      end
-
-      %w[gtk2-engines].each do |pkg|
+      %w(gtk2-engines).each do |pkg|
         package(pkg) { action :nothing }.run_action(:install)
       end
 
-      %w[gtk2 libgcc glibc].each do |pkg|
-        %w[x86_64 i686].each do |arch|
+      %w(gtk2 libgcc glibc).each do |pkg|
+        %w(x86_64 i686).each do |arch|
           yum_package pkg do
             arch arch
             action :nothing
