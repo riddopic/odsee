@@ -70,7 +70,7 @@ module Odsee
       # @return [Trueclass]
       # @raise [Odsee::Exceptions::InvalidPort]
       # @api private
-      def validate_port(port, range = 0..65_535)
+      def valid_port?(port, range = 0..65_535)
         (range === port) ? true : (fail InvalidPort.new port, range)
       end
 
@@ -113,7 +113,7 @@ module Odsee
       # @return [Trueclass]
       # @raise [Odsee::Exceptions::InvalidFile]
       # @api private
-      def validate_file?(file)
+      def valid_file?(file)
         ::File.exist?(file) ? true : (fail FileNotFound.new file)
       end
 
@@ -139,25 +139,6 @@ module Odsee
           fail PathNotFound.new path
         end
       end
-    end
-
-    # @return [String] tmp_file
-    # @api private
-    def tmp_file
-      Tempfile.new(rand(0x100000000).to_s(36)).path
-    end
-
-    # Creates a temp file for just the duration of the monitor.
-    #
-    # @return [Chef::Resource::File]
-    #
-    # @api private
-    def secure_tmp_file
-      file ||= Chef::Resource::File.new(tmp_file, run_context)
-      file.sensitive true
-      file.backup false
-      file.mode 00400
-      file
     end
 
     # @return [Chef::Resource::File] __admin_pw__
@@ -213,23 +194,22 @@ module Odsee
   # Extends a descendant with class and instance methods
   #
   # @param [Class] descendant
-  #
   # @return [undefined]
-  #
   # @api private
   def self.included(descendant)
     super
 
+    descendant.class_exec { include Odsee::Helpers }
+    descendant.class_exec { include Odsee::Exceptions }
+
     if descendant < Chef::Resource
       descendant.class_exec { include Garcon::Resource }
       descendant.class_exec { include Odsee::Resource }
-      descendant.class_exec { include Odsee::Exceptions }
 
     elsif descendant < Chef::Provider
       descendant.class_exec { include Garcon::Provider }
       descendant.class_exec { include Odsee::Provider }
       descendant.class_exec { include Odsee::CliHelpers }
-      descendant.class_exec { include Odsee::Exceptions }
     end
   end
   private_class_method :included

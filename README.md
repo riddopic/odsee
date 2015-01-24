@@ -146,8 +146,8 @@ providers
     odsee_dsconf 'dc=example,dc=com' do
       pwd_file password_file
       ldif ::File.join(node[:odsee][:install_dir],
-	  	'dsee7/resources/ldif/Example.ldif'
-	  )
+      'dsee7/resources/ldif/Example.ldif'
+    )
       action [:create_suffix, :import]
     end
 
@@ -180,14 +180,11 @@ This cookbook includes LWRPs for managing:
      entries in cn=config.
 
 
-## Class: Chef::Resource::Dsadm
-|              |                              |
-| -----------: | :----------------------------|
-|    Inherits: |  LWRPBase                    |
-|    Includes: |  Odsee                       |
-|  Defined in: |  libraries/resource_dsadm.rb |
+### dsadm
 
-## Overview
+A Chef Resource and Provider that manages the administration command for Directory Server instances.
+
+#### Overview
 
 The `dsadm` command is the local administration command for Directory Server
 instances. The `dsadm` command must be run from the local machine where the
@@ -199,61 +196,7 @@ cookbook in-place of shelling out to run the `dsadm` CLI.
 
 You use the `dsadm` resource to manage a Directory Server instance as you
 would using the command line or with a shell script although as a native Chef
-Resource.
-
-### Instance Method Summary
-- - -
-  * [(String) `admin_pw_file`](#anchor1) __private__  
-    a file containing the Direcctory Service Manager password.
-  * [(String) `below`](#anchor1) __private__  
-    creates the Directory Server instance in an existing directory, specified
-    by the `instance_path`.
-  * [(String) `cert_pw_file`](#anchor1) __private__  
-    A file containing the certificate database password.
-  * [(TrueClass, FalseClass) `created`](#anchor1) __private__  
-    Boolean, returns true if the Directory Server instance has been created,
-    otherwise false.
-  * [(String) `dn`](#anchor1) __private__  
-    Defines the Directory Manager DN.
-  * [(TrueClass, FalseClass) `force`](#anchor1) __private__  
-    If the instance should be forcibly shut down.
-  * [(String) `group_name`](#anchor1) __private__  
-    The server instance owner user ID.
-  * [(String, NilClass) `hostname`](#anchor1) __private__  
-    The DSCC registry host name.
-  * [(Integer) `ldap_port`](#anchor1) __private__  
-    The port number to use for LDAP communication.
-  * [(Integer) `ldaps_port`](#anchor1) __private__  
-    The port number to use for LDAPS communication.
-  * [(TrueClass, FalseClass) `no_inter`](#anchor1) __private__  
-    When true does not prompt for password and/or does not prompt for
-    confirmation before performing the operation.
-  * [(TrueClass, FalseClass) `safe_mode`](#anchor1) __private__  
-    Starts Directory Server with the configuration used at the last successful
-    startup.
-  * [(TrueClass, FalseClass) `schema_push`](#anchor1) __private__  
-    Ensures manually modified schema is replicated to consumers.
-  * [(String) `user_name`](#anchor1) __private__  
-    The server instance owner user ID.
-
-### Instance Method Details
-- - -
-   - (String) __admin_pw_file__
-    
-            This method is part of a private API. You should avoid using
-	        this method if possible, as it may be removed or be changed
-	        in the future.
-    
-     A file containing the Directory Service Manager password.
-    
-     __Parameters:__
-       * file (String) — File to use to store the Directory Service Manager
-         password.
-    
-     __Returns:__
-       * (String)
-- - -
-     
+Resource.     
     
 #### Syntax
 
@@ -279,9 +222,9 @@ Where:
 
 For example:
 
-    dsadm '/opt/dsInst' do
-      ldap_port 1234
-      ldaps_port 1233
+    dsadm node[:odsee][instance_path] do
+      ldap_port node[:odsee][:ldap_port]
+      ldaps_port node[:odsee][:ldaps_port]
       action [:create, :start]
     end
 
@@ -331,34 +274,29 @@ INSTANCE_PATH GZ_LDIF_FILE [GZ_LDIF_FILE...] SUFFIX_DN
 Populates an existing suffix with LDIF data from a compressed or
 uncompressed LDIF file.
 
-
 ### dsccagent
 
+A Chef Resource and Provider that help you create, delete, start, and stop DSCC agent instances.
 
-A Chef provider for the Oracle Directory Server dsccagent resource.
+#### Overview
 
-The `dsccagent` command is used to create, delete, start, and stop Directory 
-Service Control Center agent instances on the local system. You can also use the `dsccagent` command to display status and DSCC agent information, and to enable and disable SNMP monitoring.
-
-
-
-The `dsadm` command is the local administration command for Directory Server
-instances. The `dsadm` command must be run from the local machine where the
-server instance is located. This command must be run by the username that is
-the operating system owner of the server instance, or by root.
+The `dsccagent` command is used to create, delete, start, and stop DSCC agent
+instances on the local system. You can also use the `dsccagent` command to
+display status and DSCC agent information, and to enable and disable SNMP
+monitoring.
 
 This cookbook comes with a Chef Resource and Provider that can be used in the
-cookbook in-place of shelling out to run the `dsadm` CLI.
+cookbook in-place of shelling out to run the `dsccagent` CLI.
 
-You use the `dsadm` resource to manage a Directory Server instance as you
+You use the `dsccagent` resource to manage a Directory Server instance as you
 would using the command line or with a shell script although as a native Chef
-Resource.
+Resource.     
 
 #### Syntax
 
-The syntax for using the `dsadm` resource in a recipe is as follows:
+The syntax for using the `dsccagent` resource in a recipe is as follows:
 
-    dsadm 'name' do
+    dsccagent 'name' do
       attribute 'value' # see attributes section below
       ...
       action :action # see actions section below
@@ -366,8 +304,8 @@ The syntax for using the `dsadm` resource in a recipe is as follows:
 
 Where:
 
-  * `dsadm` tells the chef-client to use the `Chef::Provider::Dsadm` provider
-     during the chef-client run;
+  * `dsccagent` tells the chef-client to use the `Chef::Provider::Dsccagent`
+     provider during the chef-client run;
   * `name` is the name of the resource block; when the `path` attribute is
      not specified as part of a recipe, `name` is also the path to the DSCC
      server instance;
@@ -376,1317 +314,130 @@ Where:
   * `:action` identifies which steps the chef-client will take to bring the
      node into the desired state.
 
-]For example:
+For example:
 
-    dsadm '/opt/dsInst' do
-      ldap_port 1234
-      ldaps_port 1233
-      action [:create, :start]
+    dsccagent node[:odsee][:agent_path].call do
+      action :create
     end
 
 #### Actions:
 
-  * `:create`: Creates a Directory Server instance.
+  * `:create`: Creates a DSCC agent instance.
+  * `:delete`: Deletes a DSCC agent instance.
+  * `:enable_snmp`: Un-configures the SNMP agent of a DSCC agent instance.
+  * `:disable_snmp`: Configures a DSCC agent instance as SNMP agent.
+  * `:start`: Start a DSCC agent instance. The DSCC agent will be able to start
+    if it was registered in the DSCC registry, or if the SNMP agent is enabled.
+  * `:stop`: Stops a DSCC agent instance.
 
 #### Attribute Parameters:
 
-  * `cert_pw_file`: Reads certificate database password from `cert_pw_file`.
+  * `no_inter`: When true does not prompt for password and/or does not prompt
+     for confirmation before performing the operation.
+  * `agent_port`: Specifies the port for the DSCC agent. The default is 3997.
+  * `agent_pw_file`: A file containing the DSCC agent password.
+  * `agent_path`: Full path to the existing DSCC agent instance. The default
+     path is to use: install-path/var/dcc/agentd.
+  * `snmp_v3`: Boolean, true if SNMP version 3 should be used, otherwise false.
+  * `snmp_port`: The port number to use for SNMP traffic. Default is 3996.
+  * `ds_port`: The port number to use for traffic from Directory Servers to
+     agent. The default is 3995.
+  * `admin_pw_file`: A file containing the Direcctory Service Manager password.
 
-#### [Examples](id:anchor1)
+#### Examples
 
+### dsccreg
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>
-  Class: Chef::Resource::Dsccagent
-  
-    &mdash; Documentation by YARD 0.8.7.6
-  
-</title>
+A Chef provider for the Oracle Directory Server dsccreg resource.
 
-  <link rel="stylesheet" href="../../css/style.css" type="text/css" charset="utf-8" />
+#### Overview
 
-  <link rel="stylesheet" href="../../css/common.css" type="text/css" charset="utf-8" />
+The `dsccreg` command is used to register server instances on the local system with the Directory Service Control Center (DSCC) registry.
 
-<script type="text/javascript" charset="utf-8">
-  hasFrames = window.top.frames.main ? true : false;
-  relpath = '../../';
-  framesUrl = "../../frames.html#!Chef/Resource/Dsccagent.html";
-</script>
+This cookbook comes with a Chef Resource and Provider that can be used in the
+cookbook in-place of shelling out to run the `dsccreg` CLI.
 
+You use the `dsccreg` resource to manage a Directory Server instance as you
+would using the command line or with a shell script although as a native Chef
+Resource.     
 
-  <script type="text/javascript" charset="utf-8" src="../../js/jquery.js"></script>
+#### Syntax
 
-  <script type="text/javascript" charset="utf-8" src="../../js/app.js"></script>
+The syntax for using the `dsccreg` resource in a recipe is as follows:
 
+    dsccreg 'name' do
+      attribute 'value' # see attributes section below
+      ...
+      action :action # see actions section below
+    end
 
-  </head>
-  <body>
-    <div id="header">
-      <div id="menu">
-  
-    <a href="../../_index.html">Index (D)</a> &raquo;
-    <span class='title'>Chef</span> &raquo; <span class='title'>Resource</span>
-     &raquo; 
-    <span class="title">Dsccagent</span>
-  
+Where:
 
-  <div class="noframes"><span class="title">(</span><a href="." target="_top">no frames</a><span class="title">)</span></div>
-</div>
+  * `dsccreg` tells the chef-client to use the `Chef::Provider::Dsccreg`
+     provider during the chef-client run;
+  * `name` is the name of the resource block; when the `path` attribute is
+     not specified as part of a recipe, `name` is also the path to the DSCC
+     server instance;
+  * `attribute` is zero (or more) of the attributes that are available for
+     this resource;
+  * `:action` identifies which steps the chef-client will take to bring the
+     node into the desired state.
 
-      <div id="search">
-  
-    <a class="full_list_link" id="class_list_link"
-        href="../../class_list.html">
-      Class List
-    </a>
-  
-    <a class="full_list_link" id="method_list_link"
-        href="../../method_list.html">
-      Method List
-    </a>
-  
-    <a class="full_list_link" id="file_list_link"
-        href="../../file_list.html">
-      File List
-    </a>
-  
-</div>
-      <div class="clear"></div>
-    </div>
+For example:
 
-    <iframe id="search_frame"></iframe>
-
-    <div id="content"><h1>Class: Chef::Resource::Dsccagent
-  
-  
-  
-</h1>
-
-<dl class="box">
-  
-    <dt class="r1">Inherits:</dt>
-    <dd class="r1">
-      <span class="inheritName">LWRPBase</span>
-      
-        <ul class="fullTree">
-          <li>Object</li>
-          
-            <li class="next">LWRPBase</li>
-          
-            <li class="next">Chef::Resource::Dsccagent</li>
-          
-        </ul>
-        <a href="#" class="inheritanceTree">show all</a>
-      
-      </dd>
+    dsccreg node[:odsee][:agent_path].call do
+      action :create
+    end
     
-  
-  
-    
-  
-    
-      <dt class="r2">Includes:</dt>
-      <dd class="r2"><span class='object_link'><a href="../../Odsee.html" title="Odsee (module)">Odsee</a></span></dd>
-      
-    
-  
-  
-  
-    <dt class="r1 last">Defined in:</dt>
-    <dd class="r1 last">libraries/resource_dsccagent.rb</dd>
-  
-</dl>
-<div class="clear"></div>
-
-<h2>Overview</h2><div class="docstring">
-  <div class="discussion">
-    
-<p>A Chef resource for the Oracle Directory Server dsccagent command.</p>
-
-<p>The dsccagent command is used to create, delete, start, and stop DSCC agent
-instances on the local system. You can also use the dsccagent command to
-display status and DSCC agent information, and to enable and disable SNMP
-monitoring.</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  
-
-</div>
-
-
-
-
-
-
-  
-    <h2>
-      Instance Method Summary
-      <small>(<a href="#" class="summary_toggle">collapse</a>)</small>
-    </h2>
-
-    <ul class="summary">
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#admin_pw_file-instance_method" title="#admin_pw_file (instance method)">- (String) <strong>admin_pw_file</strong> </a>
-    
-
-    
-  </span>
-  
-  
-  
-  
-  
-  
-  <span class="private note title">private</span>
-
-  
-    <span class="summary_desc"><div class='inline'>
-<p>A file containing the Direcctory Service Manager password.</p>
-</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#agent_path-instance_method" title="#agent_path (instance method)">- (String) <strong>agent_path</strong> </a>
-    
-
-    
-  </span>
-  
-  
-  
-  
-  
-  
-  <span class="private note title">private</span>
-
-  
-    <span class="summary_desc"><div class='inline'>
-<p>Full path to the existing DSCC agent instance.</p>
-</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#agent_port-instance_method" title="#agent_port (instance method)">- (Integer) <strong>agent_port</strong> </a>
-    
-
-    
-  </span>
-  
-  
-  
-  
-  
-  
-  <span class="private note title">private</span>
-
-  
-    <span class="summary_desc"><div class='inline'>
-<p>Specifies the port for thr DSCC agent.</p>
-</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#agent_pw_file-instance_method" title="#agent_pw_file (instance method)">- (String) <strong>agent_pw_file</strong> </a>
-    
-
-    
-  </span>
-  
-  
-  
-  
-  
-  
-  <span class="private note title">private</span>
-
-  
-    <span class="summary_desc"><div class='inline'>
-<p>A file containing the DSCC agent password.</p>
-</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#created-instance_method" title="#created (instance method)">- (TrueClass, FalseClass) <strong>created</strong> </a>
-    
-
-    
-  </span>
-  
-  
-  
-  
-  
-  
-  <span class="private note title">private</span>
-
-  
-    <span class="summary_desc"><div class='inline'>
-<p>Boolean, true if a DSCC agent instance has been created, otherwise false.</p>
-</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#ds_port-instance_method" title="#ds_port (instance method)">- (Integer) <strong>ds_port</strong> </a>
-    
-
-    
-  </span>
-  
-  
-  
-  
-  
-  
-  <span class="private note title">private</span>
-
-  
-    <span class="summary_desc"><div class='inline'>
-<p>The port number to use for traffic from Directory Servers to agent.</p>
-</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#enabled-instance_method" title="#enabled (instance method)">- (TrueClass, FalseClass) <strong>enabled</strong> </a>
-    
-
-    
-  </span>
-  
-  
-  
-  
-  
-  
-  <span class="private note title">private</span>
-
-  
-    <span class="summary_desc"><div class='inline'>
-<p>Boolean, true if a DSCC agent instance has been configured as a SNMP agent,
-otherwise false.</p>
-</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#no_inter-instance_method" title="#no_inter (instance method)">- (TrueClass, FalseClass) <strong>no_inter</strong> </a>
-    
-
-    
-  </span>
-  
-  
-  
-  
-  
-  
-  <span class="private note title">private</span>
-
-  
-    <span class="summary_desc"><div class='inline'>
-<p>When true does not prompt for password and/or does not prompt for
-confirmation before performing the operation.</p>
-</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#running-instance_method" title="#running (instance method)">- (TrueClass, FalseClass) <strong>running</strong> </a>
-    
-
-    
-  </span>
-  
-  
-  
-  
-  
-  
-  <span class="private note title">private</span>
-
-  
-    <span class="summary_desc"><div class='inline'>
-<p>Boolean, true when the DSCC agent instance is running.</p>
-</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#snmp_port-instance_method" title="#snmp_port (instance method)">- (Integer) <strong>snmp_port</strong> </a>
-    
-
-    
-  </span>
-  
-  
-  
-  
-  
-  
-  <span class="private note title">private</span>
-
-  
-    <span class="summary_desc"><div class='inline'>
-<p>The port number to use for SNMP traffic.</p>
-</div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#snmp_v3-instance_method" title="#snmp_v3 (instance method)">- (TrueClass, FalseClass) <strong>snmp_v3</strong> </a>
-    
-
-    
-  </span>
-  
-  
-  
-  
-  
-  
-  <span class="private note title">private</span>
-
-  
-    <span class="summary_desc"><div class='inline'>
-<p>Boolean, true if SNMP version 3 should be used, otherwise false.</p>
-</div></span>
-  
-</li>
-
-      
-    </ul>
-  
-
-
-  
-  
-  
-  
-  
-  
-  
-
-  <div id="instance_method_details" class="method_details_list">
-    <h2>Instance Method Details</h2>
-
-    
-      <div class="method_details first">
-  <h3 class="signature first" id="admin_pw_file-instance_method">
-  
-    - (<tt>String</tt>) <strong>admin_pw_file</strong> 
-  
-
-  
-
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    <p class="note private">
-  <strong>This method is part of a private API.</strong>
-  You should avoid using this method if possible, as it may be removed or be changed in the future.
-</p>
-
-<p>A file containing the Direcctory Service Manager password.</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  <p class="tag_title">Parameters:</p>
-<ul class="param">
-  
-    <li>
-      
-        <span class='name'>file</span>
-      
-      
-        <span class='type'>(<tt>String</tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'>
-<p>File to use to store the Direcctory Service Manager password.</p>
-</div>
-      
-    </li>
-  
-</ul>
-
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>String</tt>)</span>
-      
-      
-      
-    </li>
-  
-</ul>
-
-</div><table class="source_code">
-  <tr>
-    <td>
-      <pre class="lines">
-
-
-185
-186
-187</pre>
-    </td>
-    <td>
-      <pre class="code"><span class="info file"># File 'libraries/resource_dsccagent.rb', line 185</span>
-
-<span class='id identifier rubyid_attribute'>attribute</span> <span class='symbol'>:admin_pw_file</span><span class='comma'>,</span>
-<span class='label'>kind_of:</span> <span class='const'>Proc</span><span class='comma'>,</span>
-<span class='label'>default:</span> <span class='id identifier rubyid_lazy'>lazy</span> <span class='lbrace'>{</span> <span class='id identifier rubyid___admin_pw__'>__admin_pw__</span> <span class='rbrace'>}</span></pre>
-    </td>
-  </tr>
-</table>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="agent_path-instance_method">
-  
-    - (<tt>String</tt>) <strong>agent_path</strong> 
-  
-
-  
-
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    <p class="note private">
-  <strong>This method is part of a private API.</strong>
-  You should avoid using this method if possible, as it may be removed or be changed in the future.
-</p>
-
-<p>Full path to the existing DSCC agent instance. The default path is to use:
-install-path/var/dcc/agent</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  <p class="tag_title">Parameters:</p>
-<ul class="param">
-  
-    <li>
-      
-        <span class='name'>path</span>
-      
-      
-        <span class='type'>(<tt>String</tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'>
-<p>Path to existing DSCC agent instance.</p>
-</div>
-      
-    </li>
-  
-</ul>
-
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>String</tt>)</span>
-      
-      
-      
-    </li>
-  
-</ul>
-
-</div><table class="source_code">
-  <tr>
-    <td>
-      <pre class="lines">
-
-
-136
-137
-138</pre>
-    </td>
-    <td>
-      <pre class="code"><span class="info file"># File 'libraries/resource_dsccagent.rb', line 136</span>
-
-<span class='id identifier rubyid_attribute'>attribute</span> <span class='symbol'>:agent_path</span><span class='comma'>,</span>
-<span class='label'>kind_of:</span> <span class='const'>String</span><span class='comma'>,</span>
-<span class='label'>name_attribute:</span> <span class='kw'>true</span></pre>
-    </td>
-  </tr>
-</table>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="agent_port-instance_method">
-  
-    - (<tt>Integer</tt>) <strong>agent_port</strong> 
-  
-
-  
-
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    <p class="note private">
-  <strong>This method is part of a private API.</strong>
-  You should avoid using this method if possible, as it may be removed or be changed in the future.
-</p>
-
-<p>Specifies the port for thr DSCC agent. The default is 3997.</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  <p class="tag_title">Parameters:</p>
-<ul class="param">
-  
-    <li>
-      
-        <span class='name'>port</span>
-      
-      
-        <span class='type'>(<tt>Integer</tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'>
-<p>The DSCC agent port to use.</p>
-</div>
-      
-    </li>
-  
-</ul>
-
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>Integer</tt>)</span>
-      
-      
-      
-    </li>
-  
-</ul>
-
-</div><table class="source_code">
-  <tr>
-    <td>
-      <pre class="lines">
-
-
-111
-112
-113</pre>
-    </td>
-    <td>
-      <pre class="code"><span class="info file"># File 'libraries/resource_dsccagent.rb', line 111</span>
-
-<span class='id identifier rubyid_attribute'>attribute</span> <span class='symbol'>:agent_port</span><span class='comma'>,</span>
-<span class='label'>kind_of:</span> <span class='const'>String</span><span class='comma'>,</span>
-<span class='label'>default:</span> <span class='id identifier rubyid_lazy'>lazy</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_node'>node</span><span class='lbracket'>[</span><span class='symbol'>:odsee</span><span class='rbracket'>]</span><span class='lbracket'>[</span><span class='symbol'>:agent_port</span><span class='rbracket'>]</span> <span class='rbrace'>}</span></pre>
-    </td>
-  </tr>
-</table>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="agent_pw_file-instance_method">
-  
-    - (<tt>String</tt>) <strong>agent_pw_file</strong> 
-  
-
-  
-
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    <p class="note private">
-  <strong>This method is part of a private API.</strong>
-  You should avoid using this method if possible, as it may be removed or be changed in the future.
-</p>
-
-<p>A file containing the DSCC agent password.</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  <p class="tag_title">Parameters:</p>
-<ul class="param">
-  
-    <li>
-      
-        <span class='name'>file</span>
-      
-      
-        <span class='type'>(<tt>String</tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'>
-<p>File to use to store the DSCC agent password.</p>
-</div>
-      
-    </li>
-  
-</ul>
-
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>String</tt>)</span>
-      
-      
-      
-    </li>
-  
-</ul>
-
-</div><table class="source_code">
-  <tr>
-    <td>
-      <pre class="lines">
-
-
-123
-124
-125</pre>
-    </td>
-    <td>
-      <pre class="code"><span class="info file"># File 'libraries/resource_dsccagent.rb', line 123</span>
-
-<span class='id identifier rubyid_attribute'>attribute</span> <span class='symbol'>:agent_pw_file</span><span class='comma'>,</span>
-<span class='label'>kind_of:</span> <span class='const'>Proc</span><span class='comma'>,</span>
-<span class='label'>default:</span> <span class='id identifier rubyid_lazy'>lazy</span> <span class='lbrace'>{</span> <span class='id identifier rubyid___agent_pw__'>__agent_pw__</span> <span class='rbrace'>}</span></pre>
-    </td>
-  </tr>
-</table>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="created-instance_method">
-  
-    - (<tt>TrueClass</tt>, <tt>FalseClass</tt>) <strong>created</strong> 
-  
-
-  
-
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    <p class="note private">
-  <strong>This method is part of a private API.</strong>
-  You should avoid using this method if possible, as it may be removed or be changed in the future.
-</p>
-
-<p>Boolean, true if a DSCC agent instance has been created, otherwise false</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  <p class="tag_title">Parameters:</p>
-<ul class="param">
-  
-    <li>
-      
-        <span class='name'></span>
-      
-      
-        <span class='type'>(<tt>TrueClass</tt>, <tt>FalseClass</tt>)</span>
-      
-      
-      
-    </li>
-  
-</ul>
-
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>TrueClass</tt>, <tt>FalseClass</tt>)</span>
-      
-      
-      
-    </li>
-  
-</ul>
-
-</div><table class="source_code">
-  <tr>
-    <td>
-      <pre class="lines">
-
-
-59
-60
-61</pre>
-    </td>
-    <td>
-      <pre class="code"><span class="info file"># File 'libraries/resource_dsccagent.rb', line 59</span>
-
-<span class='id identifier rubyid_attribute'>attribute</span> <span class='symbol'>:created</span><span class='comma'>,</span>
-<span class='label'>kind_of:</span> <span class='lbracket'>[</span><span class='const'>TrueClass</span><span class='comma'>,</span> <span class='const'>FalseClass</span><span class='rbracket'>]</span><span class='comma'>,</span>
-<span class='label'>default:</span> <span class='kw'>nil</span></pre>
-    </td>
-  </tr>
-</table>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="ds_port-instance_method">
-  
-    - (<tt>Integer</tt>) <strong>ds_port</strong> 
-  
-
-  
-
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    <p class="note private">
-  <strong>This method is part of a private API.</strong>
-  You should avoid using this method if possible, as it may be removed or be changed in the future.
-</p>
-
-<p>The port number to use for traffic from Directory Servers to agent. The
-default is 3995.</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  <p class="tag_title">Parameters:</p>
-<ul class="param">
-  
-    <li>
-      
-        <span class='name'>port</span>
-      
-      
-        <span class='type'>(<tt>Integer</tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'>
-<p>The Directory Servers agent port to use.</p>
-</div>
-      
-    </li>
-  
-</ul>
-
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>Integer</tt>)</span>
-      
-      
-      
-    </li>
-  
-</ul>
-
-</div><table class="source_code">
-  <tr>
-    <td>
-      <pre class="lines">
-
-
-173
-174
-175</pre>
-    </td>
-    <td>
-      <pre class="code"><span class="info file"># File 'libraries/resource_dsccagent.rb', line 173</span>
-
-<span class='id identifier rubyid_attribute'>attribute</span> <span class='symbol'>:ds_port</span><span class='comma'>,</span>
-<span class='label'>kind_of:</span> <span class='const'>Integer</span><span class='comma'>,</span>
-<span class='label'>default:</span> <span class='id identifier rubyid_lazy'>lazy</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_node'>node</span><span class='lbracket'>[</span><span class='symbol'>:odsee</span><span class='rbracket'>]</span><span class='lbracket'>[</span><span class='symbol'>:ds_port</span><span class='rbracket'>]</span> <span class='rbrace'>}</span></pre>
-    </td>
-  </tr>
-</table>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="enabled-instance_method">
-  
-    - (<tt>TrueClass</tt>, <tt>FalseClass</tt>) <strong>enabled</strong> 
-  
-
-  
-
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    <p class="note private">
-  <strong>This method is part of a private API.</strong>
-  You should avoid using this method if possible, as it may be removed or be changed in the future.
-</p>
-
-<p>Boolean, true if a DSCC agent instance has been configured as a SNMP agent,
-otherwise false</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  <p class="tag_title">Parameters:</p>
-<ul class="param">
-  
-    <li>
-      
-        <span class='name'></span>
-      
-      
-        <span class='type'>(<tt>TrueClass</tt>, <tt>FalseClass</tt>)</span>
-      
-      
-      
-    </li>
-  
-</ul>
-
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>TrueClass</tt>, <tt>FalseClass</tt>)</span>
-      
-      
-      
-    </li>
-  
-</ul>
-
-</div><table class="source_code">
-  <tr>
-    <td>
-      <pre class="lines">
-
-
-71
-72
-73</pre>
-    </td>
-    <td>
-      <pre class="code"><span class="info file"># File 'libraries/resource_dsccagent.rb', line 71</span>
-
-<span class='id identifier rubyid_attribute'>attribute</span> <span class='symbol'>:enabled</span><span class='comma'>,</span>
-<span class='label'>kind_of:</span> <span class='lbracket'>[</span><span class='const'>TrueClass</span><span class='comma'>,</span> <span class='const'>FalseClass</span><span class='rbracket'>]</span><span class='comma'>,</span>
-<span class='label'>default:</span> <span class='kw'>nil</span></pre>
-    </td>
-  </tr>
-</table>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="no_inter-instance_method">
-  
-    - (<tt>TrueClass</tt>, <tt>FalseClass</tt>) <strong>no_inter</strong> 
-  
-
-  
-
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    <p class="note private">
-  <strong>This method is part of a private API.</strong>
-  You should avoid using this method if possible, as it may be removed or be changed in the future.
-</p>
-
-  <div class="note notetag">
-    <strong>Note:</strong>
-    <div class='inline'>
-<p>This should always return nil.</p>
-</div>
-  </div>
-
-
-<p>When true does not prompt for password and/or does not prompt for
-confirmation before performing the operation.</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  <p class="tag_title">Parameters:</p>
-<ul class="param">
-  
-    <li>
-      
-        <span class='name'>interupt</span>
-      
-      
-        <span class='type'>(<tt>TrueClass</tt>, <tt>FalseClass</tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'>
-<p>If you would like to be prompted to confirm actions.</p>
-</div>
-      
-    </li>
-  
-</ul>
-
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>TrueClass</tt>, <tt>FalseClass</tt>)</span>
-      
-      
-      
-    </li>
-  
-</ul>
-
-</div><table class="source_code">
-  <tr>
-    <td>
-      <pre class="lines">
-
-
-99
-100
-101</pre>
-    </td>
-    <td>
-      <pre class="code"><span class="info file"># File 'libraries/resource_dsccagent.rb', line 99</span>
-
-<span class='id identifier rubyid_attribute'>attribute</span> <span class='symbol'>:no_inter</span><span class='comma'>,</span>
-<span class='label'>kind_of:</span> <span class='lbracket'>[</span><span class='const'>TrueClass</span><span class='comma'>,</span> <span class='const'>FalseClass</span><span class='rbracket'>]</span><span class='comma'>,</span>
-<span class='label'>default:</span> <span class='id identifier rubyid_lazy'>lazy</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_node'>node</span><span class='lbracket'>[</span><span class='symbol'>:odsee</span><span class='rbracket'>]</span><span class='lbracket'>[</span><span class='symbol'>:no_inter</span><span class='rbracket'>]</span> <span class='rbrace'>}</span></pre>
-    </td>
-  </tr>
-</table>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="running-instance_method">
-  
-    - (<tt>TrueClass</tt>, <tt>FalseClass</tt>) <strong>running</strong> 
-  
-
-  
-
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    <p class="note private">
-  <strong>This method is part of a private API.</strong>
-  You should avoid using this method if possible, as it may be removed or be changed in the future.
-</p>
-
-<p>Boolean, true when the DSCC agent instance is running. The DSCC agent will
-be able to start if it was registered in the DSCC registry, or if the SNMP
-agent is enabled</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  <p class="tag_title">Parameters:</p>
-<ul class="param">
-  
-    <li>
-      
-        <span class='name'></span>
-      
-      
-        <span class='type'>(<tt>TrueClass</tt>, <tt>FalseClass</tt>)</span>
-      
-      
-      
-    </li>
-  
-</ul>
-
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>TrueClass</tt>, <tt>FalseClass</tt>)</span>
-      
-      
-      
-    </li>
-  
-</ul>
-
-</div><table class="source_code">
-  <tr>
-    <td>
-      <pre class="lines">
-
-
-84
-85
-86</pre>
-    </td>
-    <td>
-      <pre class="code"><span class="info file"># File 'libraries/resource_dsccagent.rb', line 84</span>
-
-<span class='id identifier rubyid_attribute'>attribute</span> <span class='symbol'>:running</span><span class='comma'>,</span>
-<span class='label'>kind_of:</span> <span class='lbracket'>[</span><span class='const'>TrueClass</span><span class='comma'>,</span> <span class='const'>FalseClass</span><span class='rbracket'>]</span><span class='comma'>,</span>
-<span class='label'>default:</span> <span class='kw'>nil</span></pre>
-    </td>
-  </tr>
-</table>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="snmp_port-instance_method">
-  
-    - (<tt>Integer</tt>) <strong>snmp_port</strong> 
-  
-
-  
-
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    <p class="note private">
-  <strong>This method is part of a private API.</strong>
-  You should avoid using this method if possible, as it may be removed or be changed in the future.
-</p>
-
-<p>The port number to use for SNMP traffic. Default is 3996.</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  <p class="tag_title">Parameters:</p>
-<ul class="param">
-  
-    <li>
-      
-        <span class='name'>port</span>
-      
-      
-        <span class='type'>(<tt>Integer</tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'>
-<p>The SNMP traffic port to use.</p>
-</div>
-      
-    </li>
-  
-</ul>
-
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>Integer</tt>)</span>
-      
-      
-      
-    </li>
-  
-</ul>
-
-</div><table class="source_code">
-  <tr>
-    <td>
-      <pre class="lines">
-
-
-160
-161
-162</pre>
-    </td>
-    <td>
-      <pre class="code"><span class="info file"># File 'libraries/resource_dsccagent.rb', line 160</span>
-
-<span class='id identifier rubyid_attribute'>attribute</span> <span class='symbol'>:snmp_port</span><span class='comma'>,</span>
-<span class='label'>kind_of:</span> <span class='lbracket'>[</span><span class='const'>Integer</span><span class='rbracket'>]</span><span class='comma'>,</span>
-<span class='label'>default:</span> <span class='id identifier rubyid_lazy'>lazy</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_node'>node</span><span class='lbracket'>[</span><span class='symbol'>:odsee</span><span class='rbracket'>]</span><span class='lbracket'>[</span><span class='symbol'>:snmp_port</span><span class='rbracket'>]</span> <span class='rbrace'>}</span></pre>
-    </td>
-  </tr>
-</table>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="snmp_v3-instance_method">
-  
-    - (<tt>TrueClass</tt>, <tt>FalseClass</tt>) <strong>snmp_v3</strong> 
-  
-
-  
-
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    <p class="note private">
-  <strong>This method is part of a private API.</strong>
-  You should avoid using this method if possible, as it may be removed or be changed in the future.
-</p>
-
-<p>Boolean, true if SNMP version 3 should be used, otherwise false.</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  <p class="tag_title">Parameters:</p>
-<ul class="param">
-  
-    <li>
-      
-        <span class='name'>snmp_v3</span>
-      
-      
-        <span class='type'>(<tt>TrueClass</tt>, <tt>FalseClass</tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'>
-<p>True to use SNMP version 3, otherwise false.</p>
-</div>
-      
-    </li>
-  
-</ul>
-
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt>TrueClass</tt>, <tt>FalseClass</tt>)</span>
-      
-      
-      
-    </li>
-  
-</ul>
-
-</div><table class="source_code">
-  <tr>
-    <td>
-      <pre class="lines">
-
-
-148
-149
-150</pre>
-    </td>
-    <td>
-      <pre class="code"><span class="info file"># File 'libraries/resource_dsccagent.rb', line 148</span>
-
-<span class='id identifier rubyid_attribute'>attribute</span> <span class='symbol'>:snmp_v3</span><span class='comma'>,</span>
-<span class='label'>kind_of:</span> <span class='lbracket'>[</span><span class='const'>TrueClass</span><span class='comma'>,</span> <span class='const'>FalseClass</span><span class='rbracket'>]</span><span class='comma'>,</span>
-<span class='label'>default:</span> <span class='id identifier rubyid_lazy'>lazy</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_node'>node</span><span class='lbracket'>[</span><span class='symbol'>:odsee</span><span class='rbracket'>]</span><span class='lbracket'>[</span><span class='symbol'>:snmp_v3</span><span class='rbracket'>]</span> <span class='rbrace'>}</span></pre>
-    </td>
-  </tr>
-</table>
-</div>
-    
-  </div>
-
-</div>
-
-    <div id="footer">
-  Generated on Tue Jan 13 19:32:35 2015 by
-  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.8.7.6 (ruby-2.1.4).
-</div>
-
-  </body>
-</html>
-
-
-
+#### Actions:
+
+  * `:add-agent`: Add a DSCC agent instance to the DSCC registry.
+  * `:add-server`: Add a server instance to the DSCC registry.
+  * `:remove-agent`: Remove an agent instance from the DSCC registry.
+  * `:remove-server`: Remove a server instance from the DSCC registry.
+
+#### Attribute Parameters:
+
+  * `description`: Used to provide an optional description for the agent
+    instance.
+  * `hostname`: The DSCC registry host name. By default, the `dsccreg` command
+    uses the local host name returned by the operating system.
+  * `agent_pw_file`: A file containing the DSCC agent password.
+  * `agent_path`: Full path to the existing DSCC agent instance. The default
+    path is to use: install-path/var/dcc/agent.
+  * `force`: If the instance should be forcibly shut down. When used with
+    `stop-running-instances`, the command forcibly shuts down all the running
+    server instances that are created using the same `dsadm` installation. When
+    used with stop, the command forcibly shuts down the instance even if the
+    instance is not initiated by the current installation.
+  * `dn`: Defines the Directory Manager DN to use. The default Directory Manager
+    DN is `cn=Directory Manager`.
+  * `admin_pw_file`: A file containing the Direcctory Service Manager password.
+  * `agent_port`: Specifies port as the DSCC agent port to use for communicating
+    with this server instance.
+
+#### Examples
+
+### ${provider_name}
+#### Overview
+#### Syntax
+#### Actions:
+#### Attribute Parameters:
+#### Examples
+
+### ${provider_name}
+#### Overview
+#### Syntax
+#### Actions:
+#### Attribute Parameters:
+#### Examples
+
+### ${provider_name}
+#### Overview
+#### Syntax
+#### Actions:
+#### Attribute Parameters:
+#### Examples
 
 ## Testing
 
@@ -1729,22 +480,22 @@ Try doing that on Windows.
 The Rakefile ships with a number of tasks, each of which can be ran individually, or in groups. Typing `rake` by itself will perform style checks with [Rubocop](https://github.com/bbatsov/rubocop) and [Foodcritic](http://www.foodcritic.io), [Chefspec](http://sethvargo.github.io/chefspec/) with rspec, and integration with [Test Kitchen](http://kitchen.ci) using the Vagrant driver by default. Alternatively, integration tests can be ran with Test Kitchen cloud drivers for EC2 are provided.
 
     $ rake -T
-    rake all                         # Run all tasks
-    rake chefspec                    # Run RSpec code examples
-    rake doc                         # Build documentation
-    rake foodcritic                  # Lint Chef cookbooks
-    rake kitchen:all                 # Run all test instances
-    rake kitchen:apps-dir-centos-65  # Run apps-dir-centos-65 test instance
-    rake kitchen:default-centos-65   # Run default-centos-65 test instance
-    rake kitchen:ihs-centos-65       # Run ihs-centos-65 test instance
-    rake kitchen:was-centos-65       # Run was-centos-65 test instance
-    rake kitchen:wps-centos-65       # Run wps-centos-65 test instance
-    rake readme                      # Generate README.md from _README.md.erb
-    rake rubocop                     # Run RuboCop
-    rake rubocop:auto_correct        # Auto-correct RuboCop offenses
-    rake test                        # Run all tests except `kitchen` / Run
-                                     # kitchen integration tests
-    rake yard                        # Generate YARD Documentation
+    rake all                       # Run all tasks
+    rake chefspec                  # Run RSpec code examples
+    rake doc                       # Build documentation
+    rake foodcritic                # Lint Chef cookbooks
+    rake inch                      # Suggest objects to add documention to
+    rake kitchen:all               # Run all test instances
+    rake kitchen:default-centos-6  # Run default-centos-6 test instance
+    rake readme                    # Generate README.md from _README.md.erb
+    rake rubocop                   # Run RuboCop
+    rake rubocop:auto_correct      # Auto-correct RuboCop offenses
+    rake test                      # Run all tests except `kitchen` / Run
+                                   # kitchen integration tests
+    rake verify_measurements       # Verify that yardstick coverage is at
+                                   # least 100%
+    rake yard                      # Generate YARD Documentation
+    rake yardstick_measure         # Measure docs in lib/**/*.rb with yardstick
 
 #### Style Testing
 

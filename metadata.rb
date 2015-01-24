@@ -12,5 +12,7 @@ version '0.1.0'
   supports os, '>= 5.5'
 end
 
-depends 'chef_handler',    '~> 1.1.6'
-depends 'garcon',          '~> 0.8.0'
+depends 'chef_handler', '>= 1.1.6'
+depends 'garcon',       '~> 0.8.0'
+depends 'chef-zero',    '>= 2.0.1'
+depends 'yum',          '>= 2.0.1'

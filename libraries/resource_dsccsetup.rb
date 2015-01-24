@@ -33,19 +33,29 @@ class Chef::Resource::Dsccsetup < Chef::Resource::LWRPBase
   provides :dsccsetup, os: 'linux'
   self.resource_name = :dsccsetup
 
-  # The following actions are supported:
+  # Adds actions to the list of valid actions for this resource
   #
-  # ads-create           Create the DSCC Registry
-  # ads-delete           Delete the DSCC Registry
-  # complete-patch       Performs actions required after applying a patch
-  # disable-admin-users  Disable Administrative Users feature
-  # enable-admin-users   Enable Administrative Users feature
-  # prepare-patch        Performs actions required before applying patch
-  #
+  # @return [Chef::Provider::Dsccsetup]
+  # @api public
   actions :ads_create, :ads_delete
+
+  # Set or return the list of `state attributes` implemented by the Resource,
+  # these are attributes that describe the desired state of the system
+  #
+  # @return [Chef::Resource::Dsccsetup]
+  # @api private
   state_attrs :created
+
+  # Sets the default action
+  #
+  # @return [undefined]
+  # @api private
   default_action :nothing
 
+  # Creates the namespaced Chef::Provider::Dsccsetup
+  #
+  # @return [undefined]
+  # @api private
   provider_base Chef::Provider::Dsccsetup
 
   # Boolean, returns true if the DSCC registry has been created, otherwise false
@@ -62,7 +72,7 @@ class Chef::Resource::Dsccsetup < Chef::Resource::LWRPBase
   # A do nothing attribute, this prevents the base temporal continuum
   # gravitational tachyons from invading.
   #
-  # @param [Random]
+  # @param [Random] name
   #
   # @return [Random]
   #
@@ -78,31 +88,31 @@ class Chef::Resource::Dsccsetup < Chef::Resource::LWRPBase
   #
   # @return [String]
   #
-  # @api private
+  # @api public
   attribute :admin_pw_file,
     kind_of: Proc,
     default: lazy { __admin_pw__ }
 
   # Specifies the port for LDAP traffic. The default is 3998.
   #
-  # @param [Integer] port
+  # @param [Integer] registry_ldap_port
   #   The LDAP port to use.
   #
   # @return [Integer]
   #
-  # @api private
+  # @api public
   attribute :registry_ldap_port,
     kind_of: String,
     default: lazy { node[:odsee][:registry_ldap_port] }
 
   # Specifies the secure SSL port for LDAP traffic. The default is 3999.
   #
-  # @param [Integer] port
+  # @param [Integer] registry_ldaps_port
   #   The LDAPS port to use.
   #
   # @return [Integer]
   #
-  # @api private
+  # @api public
   attribute :registry_ldaps_port,
     kind_of: String,
     default: lazy { node[:odsee][:registry_ldaps_port] }
@@ -110,14 +120,12 @@ class Chef::Resource::Dsccsetup < Chef::Resource::LWRPBase
   # When true does not prompt for password and/or does not prompt for
   # confirmation before performing the operation.
   #
-  # @note This should always return nil.
-  #
-  # @param [TrueClass, FalseClass] interupt
+  # @param [TrueClass, FalseClass] no_inter
   #   If you would like to be prompted to confirm actions.
   #
   # @return [TrueClass, FalseClass]
   #
-  # @api private
+  # @api public
   attribute :no_inter,
     kind_of: [TrueClass, FalseClass],
     default: lazy { node[:odsee][:no_inter] }

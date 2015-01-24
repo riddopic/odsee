@@ -40,15 +40,33 @@ class Chef::Provider::Dsconf < Chef::Provider::LWRPBase
     true
   end
 
-  # Load and return the current resource
+  # Reload the resource state when something changes
   #
-  # @return [Chef::Resource::Dsconf]
+  # @return [undefined]
+  #
+  # @api private
+  def load_new_resource_state
+    if @new_resource.created.nil?
+      @new_resource.created(@current_resource.created)
+    end
+  end
+
+  # Load and return the current resource.
+  #
+  # @return [Chef::Resource::Dsccsetup]
+  #
+  # @raise [Odsee::Exceptions::ResourceNotFound]
   #
   # @api private
   def load_current_resource
-    @current_resource ||= Chef::Resource::Dsconf.new(new_resource.name)
-    @current_resource.exists = exists?
-    @current_resource.info   = info
+    @current_resource = Chef::Resource::Dsconf.new(@new_resource.name)
+    @current_resource.name(@new_resource.name)
+
+    unless ::File.exists?(which(@resource_name.to_s))
+      raise Odsee::Exceptions::ResourceNotFound
+    end
+
+    @current_resource.created(created)
     @current_resource
   end
 
@@ -75,8 +93,8 @@ class Chef::Provider::Dsconf < Chef::Provider::LWRPBase
   # @return [Chef::Resource::Dsconf]
   #
   # @api private
-  action :create_suffix do
-    if exists?
+  def action_create_suffix
+    if @new_resource.created
       Chef::Log.info "#{new_resource} already created - nothing to do"
     else
       converge_by "Creating #{new_resource} suffix entry in the DIT" do
@@ -87,11 +105,12 @@ class Chef::Provider::Dsconf < Chef::Provider::LWRPBase
                new_resource._?(:db_path,      '-L'),
                new_resource._?(:no_top_entry, '-N'),
                new_resource.suffix
-
         Chef::Log.info "DIT entry created for #{new_resource} suffix"
       end
       new_resource.updated_by_last_action(true)
     end
+    load_new_resource_state
+    @current_resource.created(true)
   end
 
   # Deletes suffix configuration and data
@@ -108,20 +127,21 @@ class Chef::Provider::Dsconf < Chef::Provider::LWRPBase
   # @return [Chef::Resource::Dsconf]
   #
   # @api private
-  action :delete_suffix do
-    if exists?
+  def action_delete_suffix
+    if @new_resource.created
       converge_by "Deleting #{new_resource} suffix entry from the DIT" do
         dsconf :create_suffix,
                new_resource._?(:hostname,  '-h'),
                new_resource._?(:ldap_port, '-p'),
                new_resource.suffix
-
         Chef::Log.info "DIT entry deleted for #{new_resource} suffix"
       end
       new_resource.updated_by_last_action(true)
     else
       Chef::Log.info "#{new_resource} does not exists - nothing to do"
     end
+    load_new_resource_state
+    @current_resource.created(false)
   end
 
   # Populates an existing suffix with LDIF data from a compressed or
@@ -206,7 +226,7 @@ class Chef::Provider::Dsconf < Chef::Provider::LWRPBase
   # @return [Chef::Resource::Dsconf]
   #
   # @api private
-  action :import do
+  def action_import
     if empty_suffix?
       converge_by 'Populating suffix with LDIF data' do
         dsconf :import,
@@ -218,12 +238,13 @@ class Chef::Provider::Dsconf < Chef::Provider::LWRPBase
                new_resource._?(:exclude_dn,  '-x'),
                new_resource.ldif_file,
                new_resource.suffix
-
-        Chef::Log.info "#{new_resource} has been removed from the registry."
+         Chef::Log.info "#{new_resource} has been removed from the registry."
       end
       new_resource.updated_by_last_action(true)
     else
       Chef::Log.info "#{new_resource} does not exists - nothing to do"
     end
+    load_new_resource_state
+    @new_resource.enabled(false)
   end
 end

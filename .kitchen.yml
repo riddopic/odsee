@@ -2,8 +2,6 @@
 ---
 driver:
   name: vagrant
-  customize:
-    memory: 512
 
 provisioner:
   name: chef_zero
@@ -11,17 +9,10 @@ provisioner:
 
 platforms:
   - name: centos-6
-  - name: centos-7
 
 suites:
   - name: default
     run_list:
-      - recipe[test_fixtures::devreporter]
+      - recipe[test_fixtures::default]
       - recipe[odsee::install]
-    attributes:
-
-  - name: example
-    run_list:
-      - recipe[test_fixtures::devreporter]
       - recipe[odsee::example]
-    attributes:

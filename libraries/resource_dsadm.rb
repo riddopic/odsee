@@ -29,25 +29,41 @@
 class Chef::Resource::Dsadm < Chef::Resource::LWRPBase
   include Odsee
 
-  identity_attr :name
+  identity_attr :instance_path
   provides :dsadm, os: 'linux'
   self.resource_name = :dsadm
 
-  actions :create, :delete, :start, :stop, :restart, :backup,
-          :enable_service, :disable_service
+  # Adds actions to the list of valid actions for this resource
+  #
+  # @return [Chef::Provider::Dsadm]
+  # @api public
+  actions :create, :delete, :start, :stop, :restart, :backup
+
+  # Set or return the list of `state attributes` implemented by the Resource,
+  # these are attributes that describe the desired state of the system
+  #
+  # @return [Chef::Resource::Dsadm]
+  # @api private
   state_attrs :exists, :state, :info
+
+  # Sets the default action
+  #
+  # @return [undefined]
+  # @api private
   default_action :nothing
 
-  provider_base Chef::Provider::Dsccsetup
+  # Creates the namespaced Chef::Provider::Dsadm
+  #
+  # @return [Class]
+  # @api private
+  provider_base Chef::Provider::Dsadm
 
   # Boolean, returns true if the Directory Server instance has been created,
   # otherwise false
-  # @note state attribute
   #
+  # @note This is a state attribute `state_attrs` which the provider sets
   # @param [TrueClass, FalseClass]
-  #
   # @return [TrueClass, FalseClass]
-  #
   # @api private
   attribute :created,
     kind_of: [TrueClass, FalseClass],
@@ -64,10 +80,10 @@ class Chef::Resource::Dsadm < Chef::Resource::LWRPBase
   #
   # @return [String]
   #
-  # @api private
-  attribute :below,
-    kind_of: String, name_attribute: true,
-    default: lazy { node[:odsee][:instance_path] }
+  # @api public
+  attribute :instance_path,
+    kind_of: String,
+    name_attribute: true
 
   # When true does not prompt for password and/or does not prompt for
   # confirmation before performing the operation.
@@ -79,7 +95,7 @@ class Chef::Resource::Dsadm < Chef::Resource::LWRPBase
   #
   # @return [TrueClass, FalseClass]
   #
-  # @api private
+  # @api public
   attribute :no_inter,
     kind_of: [TrueClass, FalseClass],
     default: lazy { node[:odsee][:no_inter] }
@@ -90,7 +106,7 @@ class Chef::Resource::Dsadm < Chef::Resource::LWRPBase
   #
   # @return [String]
   #
-  # @api private
+  # @api public
   attribute :user_name,
     kind_of: String,
     default: lazy { node[:odsee][:dsadm][:user_name] },
@@ -102,7 +118,7 @@ class Chef::Resource::Dsadm < Chef::Resource::LWRPBase
   #
   # @return [String]
   #
-  # @api private
+  # @api public
   attribute :group_name,
     kind_of: String,
     default: lazy { node[:odsee][:dsadm][:group_name] },
@@ -115,7 +131,7 @@ class Chef::Resource::Dsadm < Chef::Resource::LWRPBase
   #
   # @return [String, NilClass]
   #
-  # @api private
+  # @api public
   attribute :hostname,
     kind_of: [String, NilClass],
     default: nil
@@ -127,7 +143,7 @@ class Chef::Resource::Dsadm < Chef::Resource::LWRPBase
   #
   # @return [Integer]
   #
-  # @api private
+  # @api public
   attribute :ldap_port,
     kind_of: Integer,
     default: lazy { node[:odsee][:ldap_port] }
@@ -139,7 +155,7 @@ class Chef::Resource::Dsadm < Chef::Resource::LWRPBase
   #
   # @return [Integer]
   #
-  # @api private
+  # @api public
   attribute :ldaps_port,
     kind_of: Integer,
     default: lazy { node[:odsee][:ldaps_port] }
@@ -150,7 +166,7 @@ class Chef::Resource::Dsadm < Chef::Resource::LWRPBase
   #
   # @return [String]
   #
-  # @api private
+  # @api public
   attribute :dn,
     kind_of: String,
     default: lazy { node[:odsee][:dn] }
@@ -162,7 +178,7 @@ class Chef::Resource::Dsadm < Chef::Resource::LWRPBase
   #
   # @return [String]
   #
-  # @api private
+  # @api public
   attribute :admin_pw_file,
     kind_of: Proc,
     default: lazy { __admin_pw__ }
@@ -174,7 +190,7 @@ class Chef::Resource::Dsadm < Chef::Resource::LWRPBase
   #
   # @return [TrueClass, FalseClass]
   #
-  # @api private
+  # @api public
   attribute :safe_mode,
     kind_of: [TrueClass, FalseClass],
     default: lazy { node[:odsee][:safe_mode] }
@@ -185,7 +201,7 @@ class Chef::Resource::Dsadm < Chef::Resource::LWRPBase
   #
   # @return [TrueClass, FalseClass]
   #
-  # @api private
+  # @api public
   attribute :schema_push,
     kind_of: [TrueClass, FalseClass],
     default: lazy { node[:odsee][:schema_push] }
@@ -197,7 +213,7 @@ class Chef::Resource::Dsadm < Chef::Resource::LWRPBase
   #
   # @return [String]
   #
-  # @api private
+  # @api public
   attribute :cert_pw_file,
     kind_of: Proc,
     default: lazy { __cert_pw__ }
@@ -212,9 +228,9 @@ class Chef::Resource::Dsadm < Chef::Resource::LWRPBase
   #
   # @return [TrueClass, FalseClass]
   #
-  # @api private
+  # @api public
   attribute :force,
     kind_of: [TrueClass, FalseClass],
     default: lazy { node[:odsee][:force] }
-    
+
 end

@@ -68,13 +68,13 @@ default[:odsee][:registry_ldaps_port] = 3999
 # Default DN as Directory Manager DN.
 default[:odsee][:dn] = "'cn=Directory Manager'"
 
-# Does not ask for confirmation before rejecting non-trusted server
-# certificates.
-default[:odsee][:reject_cert] = true
-
-# Does not ask for confirmation before rejecting non-trusted server
-# certificates.
-default[:odsee][:reject_cert] = true
+# # Does not ask for confirmation before rejecting non-trusted server
+# # certificates.
+# default[:odsee][:reject_cert] = true
+# 
+# # Does not ask for confirmation before rejecting non-trusted server
+# # certificates.
+# default[:odsee][:reject_cert] = true
 
 # Does not prompt for confirmation before performing the operation.
 default[:odsee][:no_inter] = true

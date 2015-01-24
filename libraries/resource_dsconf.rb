@@ -33,17 +33,41 @@ class Chef::Resource::Dsconf < Chef::Resource::LWRPBase
   provides :dsconf, os: 'linux'
   self.resource_name = :dsconf
 
+  # Adds actions to the list of valid actions for this resource
+  #
+  # @return [Chef::Provider::Dsccsetup]
+  # @api public
   actions :create_suffix, :delete_suffix, :import, :export
+
+  # Set or return the list of `state attributes` implemented by the Resource,
+  # these are attributes that describe the desired state of the system
+  #
+  # @return [Chef::Resource::Dsccsetup]
+  # @api private
+  state_attrs :created
+
+  # Sets the default action
+  #
+  # @return [undefined]
+  # @api private
   default_action :nothing
 
-  state_attrs :exists, :info
+  # Creates the namespaced Chef::Provider::Dsconf
+  #
+  # @return [undefined]
+  # @api private
   provider_base Chef::Provider::Dsconf
 
-  # @!attribute [rw] exists
-  #   @return [TrueClass, FalseClass] Boolean, true if the BLANK BLANK BLANK
-  #     BLANK BLANK, false otherwise.
-  attr_accessor :exists
-  alias_method :exists?, :exists
+  # Boolean, returns true if...WHAT?..WHAT?..WHAT?..WHAT?..?.., otherwise false
+  #
+  # @param [TrueClass, FalseClass]
+  #
+  # @return [TrueClass, FalseClass]
+  #
+  # @api private
+  attribute :created,
+    kind_of: [TrueClass, FalseClass],
+    default: nil
 
   # The DSCC registry host name. By default it is nil, which sets it to
   # localhost.
@@ -52,7 +76,7 @@ class Chef::Resource::Dsconf < Chef::Resource::LWRPBase
   #
   # @return [String, NilClass]
   #
-  # @api private
+  # @api public
   attribute :hostname,
     kind_of: [String, NilClass],
     default: nil
@@ -64,7 +88,7 @@ class Chef::Resource::Dsconf < Chef::Resource::LWRPBase
   #
   # @return [Integer]
   #
-  # @api private
+  # @api public
   attribute :ldap_port,
     kind_of: Integer,
     default: lazy { node[:odsee][:ldap_port] }
@@ -76,7 +100,7 @@ class Chef::Resource::Dsconf < Chef::Resource::LWRPBase
   #
   # @return [String] db_name
   #
-  # @api private
+  # @api public
   attribute :db_name,
     kind_of: String,
     default: nil
@@ -88,7 +112,7 @@ class Chef::Resource::Dsconf < Chef::Resource::LWRPBase
   #
   # @return [String]
   #
-  # @api private
+  # @api public
   attribute :db_path,
     kind_of: String,
     default: nil
@@ -102,7 +126,7 @@ class Chef::Resource::Dsconf < Chef::Resource::LWRPBase
   #
   # @return [TrueClass, FalseClass]
   #
-  # @api private
+  # @api public
   attribute :no_top_entry,
     kind_of: [TrueClass, FalseClass],
     default: lazy { node[:odsee][:no_top_entry] }
@@ -114,7 +138,7 @@ class Chef::Resource::Dsconf < Chef::Resource::LWRPBase
   #
   # @return [String]
   #
-  # @api private
+  # @api public
   attribute :suffix,
     kind_of: String,
     name_attribute: true
@@ -126,7 +150,7 @@ class Chef::Resource::Dsconf < Chef::Resource::LWRPBase
   #
   # @return [TrueClass, FalseClass]
   #
-  # @api private
+  # @api public
   attribute :async,
     kind_of: [TrueClass, FalseClass],
     default: nil
@@ -138,7 +162,7 @@ class Chef::Resource::Dsconf < Chef::Resource::LWRPBase
   #
   # @return [TrueClass, FalseClass]
   #
-  # @api private
+  # @api public
   attribute :incremental,
     kind_of: [TrueClass, FalseClass],
     default: nil
@@ -150,7 +174,7 @@ class Chef::Resource::Dsconf < Chef::Resource::LWRPBase
   #
   # @return [String]
   #
-  # @api private
+  # @api public
   attribute :exclude_dn,
     kind_of: [TrueClass, FalseClass],
     default: nil
@@ -161,10 +185,9 @@ class Chef::Resource::Dsconf < Chef::Resource::LWRPBase
   #
   # @return [String]
   #
-  # @api private
+  # @api public
   attribute :ldif_file,
-    kind_of: String,
-    name_attribute: true
+    kind_of: String
 
   # A file containing the Direcctory Service Manager password.
   #
@@ -173,7 +196,7 @@ class Chef::Resource::Dsconf < Chef::Resource::LWRPBase
   #
   # @return [String]
   #
-  # @api private
+  # @api public
   attribute :admin_pw_file,
     kind_of: Proc,
     default: lazy { __admin_pw__ }

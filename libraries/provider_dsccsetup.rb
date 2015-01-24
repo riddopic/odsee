@@ -29,11 +29,11 @@
 class Chef::Provider::Dsccsetup < Chef::Provider::LWRPBase
   include Odsee
 
-  def initialize(name, run_context = nil)
-    super
-    @created = nil
-    do_prerequisite
-  end
+  # def initialize(name, run_context = nil)
+  #   super
+  #   @created = nil
+  #   do_prerequisite
+  # end
 
   # Boolean indicating if WhyRun is supported by this provider.
   #
@@ -99,6 +99,8 @@ class Chef::Provider::Dsccsetup < Chef::Provider::LWRPBase
   #
   # @api private
   def action_ads_create
+    banner '｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡' \
+           '｡｡｡｡｡｡'.yellow
     if @current_resource.created
       Chef::Log.info "#{new_resource} already exists - nothing to do"
     else
@@ -122,6 +124,8 @@ class Chef::Provider::Dsccsetup < Chef::Provider::LWRPBase
     end
     load_new_resource_state
     @new_resource.created(true)
+    banner '｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡' \
+           '｡｡｡｡｡｡'.yellow
   end
 
   # Delete the Directory Server instance used by DSCC to store configuration
@@ -145,20 +149,13 @@ class Chef::Provider::Dsccsetup < Chef::Provider::LWRPBase
       Chef::Log.info "#{new_resource} does not exists - nothing to do"
     end
     load_new_resource_state
-    @new_resource.enabled(false)
+    @new_resource.created(false)
   end
 
   private #   P R O P R I E T À   P R I V A T A   Vietato L'accesso
 
   def do_prerequisite
     lock.synchronize do
-      directory node[:odsee][:registry_path].call do
-        owner node[:odsee][:dsadm][:user_name]
-        group node[:odsee][:dsadm][:group_name]
-        mode 00755
-        action :create
-      end
-
       %w(gtk2-engines).each do |pkg|
         package(pkg) { action :nothing }.run_action(:install)
       end

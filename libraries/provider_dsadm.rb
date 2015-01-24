@@ -29,19 +29,6 @@
 class Chef::Provider::Dsadm < Chef::Provider::LWRPBase
   include Odsee
 
-  include Odsee
-
-  identity_attr :path
-  provides :dsadm, os: 'linux'
-  self.resource_name = :archr
-
-  actions :create, :delete, :start, :stop, :restart, :backup,
-          :enable_service, :disable_service
-  state_attrs :exists, :state, :info
-  default_action :nothing
-
-  provider_base Chef::Provider::Dsccsetup
-
   # Boolean indicating if WhyRun is supported by this provider
   #
   # @return [TrueClass, FalseClass]
@@ -59,6 +46,9 @@ class Chef::Provider::Dsadm < Chef::Provider::LWRPBase
   def load_new_resource_state
     if @new_resource.created.nil?
       @new_resource.created(@current_resource.created)
+    end
+    if @new_resource.enabled.nil?
+      @new_resource.enabled(@current_resource.enabled)
     end
     if @new_resource.running.nil?
       @new_resource.running(@current_resource.running)
@@ -80,8 +70,8 @@ class Chef::Provider::Dsadm < Chef::Provider::LWRPBase
       raise Odsee::Exceptions::ResourceNotFound
     end
 
-    @current_resource.created(created)
-    @current_resource.running(running)
+    @current_resource.created(created?)
+    @current_resource.running(running?)
     @current_resource
   end
 
@@ -120,7 +110,7 @@ class Chef::Provider::Dsadm < Chef::Provider::LWRPBase
   #
   # @api private
   def action_create
-    if @current_resource.exists?
+    if @current_resource.created
       Chef::Log.info "#{new_resource} already created - nothing to do"
     else
       converge_by 'Creating a Directory Server instance' do
@@ -136,6 +126,7 @@ class Chef::Provider::Dsadm < Chef::Provider::LWRPBase
                 new_resource._?(:dn,            '-D'),
                 new_resource._?(:admin_pw_file, '-w'),
                 new_resource.instance_path
+          Chef::Log.info 'DSCC Directory Server instance initialized'
         ensure
           %w[new_resource.admin_pw_file.split.last
              new_resource.agent_pw_file.split.last
@@ -143,7 +134,7 @@ class Chef::Provider::Dsadm < Chef::Provider::LWRPBase
             ::File.unlink(__pfile__) if ::File.exist?(__pfile__)
           end
         end
-        Chef::Log.info 'DSCC Directory Server instance initialized'
+        new_resource.updated_by_last_action(true)
       end
     end
     load_new_resource_state
@@ -159,16 +150,17 @@ class Chef::Provider::Dsadm < Chef::Provider::LWRPBase
   #
   # @api private
   def action_delete
-    if @current_resource.exists?
+    if @current_resource.created
       converge_by "Deleting Directory Server instance for #{new_resource}" do
         dsadm :delete, new_resource.instance_path
         Chef::Log.info "Directory Server instance deleted for #{new_resource}"
       end
+      new_resource.updated_by_last_action(true)
     else
       Chef::Log.info "#{new_resource} does not exists - nothing to do"
     end
     load_new_resource_state
-    @new_resource.created(true)
+    @new_resource.created(false)
   end
 
   # Starts a Directory Server instance
@@ -189,7 +181,7 @@ class Chef::Provider::Dsadm < Chef::Provider::LWRPBase
   #
   # @api private
   def action_start
-    if @current_resource.running?
+    if @current_resource.running
       Chef::Log.info "#{new_resource} already enabled - nothing to do"
     else
       converge_by "Start the Directory Server instance for #{new_resource}" do
@@ -201,9 +193,10 @@ class Chef::Provider::Dsadm < Chef::Provider::LWRPBase
               new_resource.instance_path
         Chef::Log.info "Directory Server instance started for #{new_resource}"
       end
+      new_resource.updated_by_last_action(true)
     end
     load_new_resource_state
-    @new_resource.created(true)
+    @new_resource.running(true)
   end
 
   # Stops a Directory Server instance
@@ -220,63 +213,19 @@ class Chef::Provider::Dsadm < Chef::Provider::LWRPBase
   # @return [Chef::Resource::Dsadm]
   #
   # @api private
-  def action_create
-    if @current_resource.exists?
-      Chef::Log.info "#{new_resource} already running - nothing to do"
-    else
-      converge_by 'Creating a Directory Server instance' do
-        begin
-          dsadm :create,
-                new_resource._?(:below,         '-B'),
-                new_resource._?(:no_inter,      '-i'),
-                new_resource._?(:user_name,     '-u'),
-                new_resource._?(:group_name,    '-g'),
-                new_resource._?(:hostname,      '-h'),
-                new_resource._?(:ldap_port,     '-p'),
-                new_resource._?(:ldaps_port,    '-P'),
-                new_resource._?(:dn,            '-D'),
-                new_resource._?(:admin_pw_file, '-w'),
-                new_resource.instance_path
-        ensure
-          %w[new_resource.admin_pw_file.split.last
-             new_resource.agent_pw_file.split.last
-             new_resource.cert_pw_file.split.last].each do |__pfile__|
-            ::File.unlink(__pfile__) if ::File.exist?(__pfile__)
-          end
-        end
-        Chef::Log.info 'DSCC Directory Server instance initialized'
+  def action_stop
+    if @current_resource.running
+      converge_by 'Stopping the Directory Server instance' do
+        dsadm :stop,
+              new_resource._?(:force, '--force'),
+              new_resource.instance_path
+        Chef::Log.info 'Directory Server instance stopped'
       end
+      new_resource.updated_by_last_action(true)
+    else
+      Chef::Log.info "#{new_resource} is stopped - nothing to do"
     end
     load_new_resource_state
-    @new_resource.created(true)
+    @new_resource.running(false)
   end
-
-  # Restarts a Directory Server instance
-  #
-  # @param [TrueClass, FalseClass] no_inter
-  #   Does not prompt for password
-  # @param [TrueClass, FalseClass] schema_push
-  #   Ensures manually modified schema is replicated to consumers
-  # @param [String] cert_pw_file
-  #   Reads certificate database password from `cert_pw_file`
-  # @param [String] instance_path
-  #   Full path to the Directory Server instance
-  #
-  # @return [Chef::Resource::Dsadm]
-  #
-  # @api private
-  def action_stop
-    if @current_resource.running?
-      converge_by "Restarting Directory Server instance for #{new_resource}" do
-        dsadm :start,
-              new_resource._?(:no_inter,               '-i'),
-              new_resource._?(:schema_push, '--schema-push'),
-              new_resource._?(:cert_pw_file,           '-W'),
-              new_resource.instance_path
-        end
-      Chef::Log.info "Directory Server instance stopped for #{new_resource}"
-    end
-  end
-  load_new_resource_state
-  @new_resource.created(true)
 end

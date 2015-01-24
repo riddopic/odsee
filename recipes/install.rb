@@ -22,6 +22,24 @@
 
 single_include 'garcon::default'
 
+concurrent 'Odsee::Install' do
+  block do
+    monitor.synchronize do
+      %w(gtk2-engines).each do |pkg|
+        package pkg
+      end
+
+      %w(gtk2 libgcc glibc).each do |pkg|
+        %w(x86_64 i686).each do |arch|
+          yum_package pkg do
+            arch arch
+          end
+        end
+      end
+    end
+  end
+end
+
 zip_file node[:odsee][:install_dir] do
   checksum node[:odsee][:source][:checksum]
   source node[:odsee][:source][:filename]
@@ -31,3 +49,10 @@ zip_file node[:odsee][:install_dir] do
   not_if { ::File.directory?(node[:odsee][:agent_path].call) }
   action :unzip
 end
+
+# directory node[:odsee][:registry_path].call do
+#   owner node[:odsee][:dsadm][:user_name]
+#   group node[:odsee][:dsadm][:group_name]
+#   mode 00755
+#   action :create
+# end

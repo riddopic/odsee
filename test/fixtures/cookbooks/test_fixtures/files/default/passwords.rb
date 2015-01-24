@@ -1,7 +1,7 @@
 # encoding: UTF-8
 #
-# Cookbook Name:: odsee
-# Cookbook:: default
+# Cookbook Name:: garcon
+# Handler:: threadpool
 #
 # Author: Stefano Harding <riddopic@gmail.com>
 #
@@ -20,4 +20,23 @@
 # limitations under the License.
 #
 
-single_include 'odsee::install'
+require 'chef/handler'
+
+class PasswordPooper < Chef::Handler
+
+  def initialize
+    Chef::Log.debug "#{self.class.to_s} initialized."
+  end
+
+  def report
+    if failed?
+      # If something goes wrong in dev dump the password so you can debug
+      Chef::Log.info ''
+      Chef::Log.info '->>>---P-A-S-S-W-O-R-D-S---F-O-R---A-L-L---T-O---S-E-E---->>>>'
+      Chef::Log.info ''
+      Chef::Log.info "admin => '#{node[:odsee][:admin_password]}'"
+      Chef::Log.info "agent => '#{node[:odsee][:agent_password]}'"
+      Chef::Log.info "cert  => '#{node[:odsee][:cert_password]}'"
+    end
+  end
+end

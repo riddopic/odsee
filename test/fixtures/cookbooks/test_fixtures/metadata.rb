@@ -9,3 +9,4 @@ long_description 'Test cookbook for test_fixtures'
 version          '0.1.0'
 
 depends 'chef_handler'
+depends 'garcon'

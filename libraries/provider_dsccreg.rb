@@ -60,44 +60,47 @@ class Chef::Provider::Dsccreg < Chef::Provider::LWRPBase
   # @api private
   def load_current_resource
     @current_resource = Chef::Resource::Dsccreg.new(@new_resource.name)
-    @current_resource.agent_path(@new_resource.agent_path)
+    @current_resource.path(@new_resource.path)
 
     unless ::File.exists?(which(@resource_name.to_s))
       raise Odsee::Exceptions::ResourceNotFound
     end
 
-    @current_resource.servers(check_for(:servers, new_resource.agent_path))
-    @current_resource.agents(check_for(:agents, new_resource.agent_path))
+    @current_resource.servers(check_for(:servers, @new_resource.path))
+    @current_resource.agents(check_for(:agents, @new_resource.path))
     @current_resource
   end
 
   # Add DSCC agent instance to the DSCC registry.
   #
-  # @param [String] text
+  # @param [String] description
   #   Used to provide an optional description for the agent instance.
   # @param [String, Integer] hostname
   #   The DSCC registry host name or IP address.
   # @param [String] agent_pw_file
   #   Uses `password` from `agent_pw_file` file to access agent configuration.
-  # @param [String] agent_path
+  # @param [String] path
   #   Full path to the existing DSCC agent instance. The default path is to use:
   #   `install-path/var/dcc/agent`.
   #
   # @return [Chef::Provider::Dsccreg]
   #
   # @api private
-  action :add_agent do
+  def action_add_agent
+    banner '｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡' \
+           '｡｡｡｡｡｡'.blue
     if @current_resource.agents
       Chef::Log.info "#{new_resource} already created - nothing to do"
     else
       converge_by "Adding #{new_resource} instance to the DSCC registry" do
         begin
           dsccreg :add_agent,
-                  new_resource._?(:text,          '-d'),
+                  new_resource._?(:description,   '-d'),
                   new_resource._?(:hostname,      '-H'),
                   new_resource._?(:agent_pw_file, '-G'),
                   new_resource._?(:admin_pw_file, '-w'),
-                  new_resource.agent_path
+                  new_resource.path
+          Chef::Log.info 'DSCC agent instance added to the DSCC registry'
         ensure
           %w[new_resource.admin_pw_file.split.last
              new_resource.agent_pw_file.split.last
@@ -105,11 +108,14 @@ class Chef::Provider::Dsccreg < Chef::Provider::LWRPBase
             ::File.unlink(__pfile__) if ::File.exist?(__pfile__)
           end
         end
-        Chef::Log.info 'DSCC agent instance added to the DSCC registry'
+        new_resource.updated_by_last_action(true)
       end
     end
     load_new_resource_state
-    @new_resource.agents(true)
+    @current_resource.agents(check_for(:agents, @new_resource.path))
+
+    banner '｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡' \
+           '｡｡｡｡｡｡'.blue
   end
 
   # Remove a DSCC agent instance from the DSCC registry.
@@ -118,27 +124,28 @@ class Chef::Provider::Dsccreg < Chef::Provider::LWRPBase
   #   The DSCC registry host name or IP address.
   # @param [TrueClass, FalseClass] force
   #   Forces removal of the agent instance from the DSCC registry.
-  # @param [String] agent_path
+  # @param [String] path
   #   Full path to the existing DSCC agent instance. The default path is to use:
   #   install-path/var/dcc/agent.
   #
   # @return [Chef::Provider::Dsccreg]
   #
   # @api private
-  action :remove_agent do
+  def action_remove_agent
     if @current_resource.agents
       converge_by "Remove #{new_resource} instance from the registry" do
         dsccreg :remove_agent,
                 new_resource._?(:hostname, '-H'),
                 new_resource._?(:force,    '-f'),
-                new_resource.agent_path
+                new_resource.path
         Chef::Log.info "#{new_resource} has been removed from the registry."
       end
+      new_resource.updated_by_last_action(true)
     else
       Chef::Log.info "#{new_resource} does not exists - nothing to do"
     end
     load_new_resource_state
-    @new_resource.agents(false)
+    @current_resource.agents(check_for(:agents, @new_resource.path))
   end
 
   # Add a server instance to the DSCC registry.
@@ -148,31 +155,33 @@ class Chef::Provider::Dsccreg < Chef::Provider::LWRPBase
   #   instance-path. By default, the dsccreg command uses cn=Directory Manager.
   # @param [String] admin_pw_file
   #   Uses `password` from `admin_pw_file` file to access agent configuration.
-  # @param [String] text
+  # @param [String] description
   #   Used to provide an optional description for the agent instance.
   # @param [String, Integer] hostname
   #   The DSCC registry host name or IP address.
   # @param [Integer] agent_port
   #   Specifies port as the DSCC agent port to use for communicating with this
   #   server instance.
-  # @param [String] INST_PATH
+  # @param [String] path
   #   Full path to the server instance.
   #
   # @return [Chef::Provider::Dsccreg]
   #
   # @api private
-  action :add_server do
+  def action_add_server
     if @current_resource.servers
       Chef::Log.info "#{new_resource} already created - nothing to do"
     else
       converge_by "Adding server instance #{new_resource} to the registry" do
         begin
           dsccreg :add_agent,
-                  new_resource._?(:dn,            '-B'),
-                  new_resource._?(:admin_pw_file, '-G'),
-                  new_resource._?(:text, '         -d'),
-                  new_resource._?(:agent_port,    '-H'),
-                  new_resource.INST_PATH
+                  new_resource._?(:dn,                   '-B'),
+                  new_resource._?(:admin_pw_file,        '-G'),
+                  new_resource._?(:description,          '-d'),
+                  new_resource._?(:hostname,             '-H'),
+                  new_resource._?(:agent_port, '--agent-port'),
+                  new_resource.path
+          Chef::Log.info 'Server instance added to the DSCC registry'
         ensure
           %w[new_resource.admin_pw_file.split.last
              new_resource.agent_pw_file.split.last
@@ -180,11 +189,11 @@ class Chef::Provider::Dsccreg < Chef::Provider::LWRPBase
             ::File.unlink(__pfile__) if ::File.exist?(__pfile__)
           end
         end
-        Chef::Log.info 'Server instance added to the DSCC registry'
+        new_resource.updated_by_last_action(true)
       end
     end
     load_new_resource_state
-    @new_resource.servers(true)
+    @current_resource.servers(check_for(:servers, @new_resource.path))
   end
 
   # Remove a server instance from the DSCC registry.
@@ -196,21 +205,22 @@ class Chef::Provider::Dsccreg < Chef::Provider::LWRPBase
   #   Uses `password` from `admin_pw_file` file to access agent configuration.
   # @param [String, Integer] hostname
   #   The DSCC registry host name or IP address.
-  # @param [String] inst_path
+  # @param [String] path
   #   Full path to the server instance.
   #
   # @return [Chef::Provider::Dsccreg]
   #
   # @api private
-  action :remove_server do
+  def action_remove_server
     if @current_resource.servers
       converge_by "Removing server instance #{new_resource} from registry" do
         begin
           dsccreg :remove_server,
                   new_resource._?(:dn,            '-B'),
                   new_resource._?(:admin_pw_file, '-G'),
-                  new_resource._?(:hostname,      '-d'),
-                  new_resource.INST_PATH
+                  new_resource._?(:hostname,      '-H'),
+                  new_resource.path
+          Chef::Log.info "Server instance #{new_resource} has been removed."
         ensure
           %w[new_resource.admin_pw_file.split.last
              new_resource.agent_pw_file.split.last
@@ -218,10 +228,10 @@ class Chef::Provider::Dsccreg < Chef::Provider::LWRPBase
             ::File.unlink(__pfile__) if ::File.exist?(__pfile__)
           end
         end
-        Chef::Log.info "Server instance #{new_resource} has been removed."
+        new_resource.updated_by_last_action(true)
       end
     end
     load_new_resource_state
-    @new_resource.servers(true)
+    @current_resource.servers(check_for(:servers, @new_resource.path))
   end
 end
