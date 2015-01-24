@@ -57,7 +57,6 @@ module Odsee
   end
 
   class Ldap
-
     # Configuration of the directory server is almost entirely via ldap objects.
     # This class enables LDAP connectivity to the directory server via the net-
     # ldap library.
@@ -96,14 +95,13 @@ module Odsee
     # It returns a connected ruby Net::LDAP object
     #
     def bind(host, port, auth, databag)
+      auth = auth.is_a?(Hash) ? auth.to_hash : auth.to_s
 
-      auth = auth.kind_of?(Hash) ? auth.to_hash : auth.to_s
-
-      unless databag.kind_of?(String) or databag.kind_of?(Symbol)
-        raise "Invalid databag: #{databag}"
+      unless databag.is_a?(String) || databag.is_a?(Symbol)
+        fail "Invalid databag: #{databag}"
       end
 
-      if auth.kind_of?(String) and auth.length > 0
+      if auth.is_a?(String) && auth.length > 0
         require 'chef/data_bag_item'
         require 'chef/encrypted_data_bag_item'
 
@@ -113,10 +111,8 @@ module Odsee
         ).to_hash
       end
 
-      unless auth.kind_of?(Hash) &&
-        auth.key?('bind_dn') &&
-        auth.key?('password')
-        raise "Invalid auth: #{auth}"
+      unless auth.is_a?(Hash) && auth.key?('bind_dn') && auth.key?('password')
+        fail "Invalid auth: #{auth}"
       end
 
       @ldap = Net::LDAP.new host: host, port: port, auth: {
@@ -124,7 +120,7 @@ module Odsee
       }
 
       unless @ldap.get_operation_result.message == 'Success'
-        raise "Unable to bind: #{@ldap.get_operation_result.message}"
+        fail "Unable to bind: #{@ldap.get_operation_result.message}"
       end
       @ldap
     end
@@ -137,9 +133,9 @@ module Odsee
     # It returns a list of entries.
     #
     def search(c, basedn, *constraints)
-      self.bind( c.host, c.port, c.auth, c.databag ) unless @ldap
-      raise "Must specify base dn for search" unless basedn
-      ( filter, scope, attributes ) = constraints
+      bind(c.host, c.port, c.auth, c.databag) unless @ldap
+      fail 'Must specify base dn for search' unless basedn
+      (filter, scope, attributes) = constraints
       filter = filter.nil? ? Net::LDAP::Filter.eq('objectClass', '*') : filter
 
       case scope
@@ -152,14 +148,14 @@ module Odsee
       end
 
       scope = scope.nil? ? Net::LDAP::SearchScope_BaseObject : scope
-      attributes = attributes.nil? ? [ '*' ] : attributes
+      attributes = attributes.nil? ? ['*'] : attributes
 
       entries = @ldap.search(
         base: basedn, filter: filter, scope: scope, attributes: attribute
       )
 
       unless @ldap.get_operation_result.message =~ /(Success|No Such Object)/
-        raise "Error while searching: #{@ldap.get_operation_result.message}"
+        fail "Error while searching: #{@ldap.get_operation_result.message}"
       end
       entries
     end
@@ -170,7 +166,7 @@ module Odsee
     # entry.
     #
     def get_entry(c, dn)
-      self.bind( c.host, c.port, c.auth, c.databag ) unless @ldap
+      bind(c.host, c.port, c.auth, c.databag) unless @ldap
       entry = @ldap.search(
         base:   dn,
         filter: Net::LDAP::Filter.eq('objectClass', '*'),
@@ -179,7 +175,7 @@ module Odsee
       )
 
       unless @ldap.get_operation_result.message =~ /(Success|No Such Object)/
-        raise "Error while searching: #{@ldap.get_operation_result.message}"
+        fail "Error while searching: #{@ldap.get_operation_result.message}"
       end
       entry ? entry.first : entry
     end
@@ -188,13 +184,13 @@ module Odsee
     # and the attributes for the entry to be added.
     #
     def add_entry(c, dn, attrs)
-      self.bind( c.host, c.port, c.auth, c.databag ) unless @ldap
+      bind(c.host, c.port, c.auth, c.databag) unless @ldap
       attrs = CICPHash.new.merge(attrs)
       relativedn = dn.split(',').first
       attrs.merge!(Hash[*relativedn.split('=').flatten])
       @ldap.add dn: dn, attributes: attrs
       unless @ldap.get_operation_result.message == 'Success'
-        raise "Unable to add record: #{@ldap.get_operation_result.message}"
+        fail "Unable to add record: #{@ldap.get_operation_result.message}"
       end
     end
 
@@ -219,11 +215,11 @@ module Odsee
     # ONLY! This is a limitation of the ruby net-ldap library.
     #
     def modify_entry(c, dn, ops)
-      entry = self.get_entry(c, dn)
+      entry = get_entry(c, dn)
       @ldap.modify dn: dn, operations: ops
       unless @ldap.get_operation_result.message =~
-        /(Success|Attribute or Value Exists)/
-        raise "Unable to modify record: #{@ldap.get_operation_result.message}"
+             /(Success|Attribute or Value Exists)/
+        fail "Unable to modify record: #{@ldap.get_operation_result.message}"
       end
     end
 
@@ -231,10 +227,10 @@ module Odsee
     # the Distinguished Name of the entry to be deleted.
     #
     def delete_entry(c, dn)
-      self.bind(c.host, c.port, c.auth, c.databag) unless @ldap
+      bind(c.host, c.port, c.auth, c.databag) unless @ldap
       @ldap.delete dn: dn
       unless @ldap.get_operation_result.message =~ /(Success|No Such Object)/
-        raise "Unable to remove record: #{@ldap.get_operation_result.message}"
+        fail "Unable to remove record: #{@ldap.get_operation_result.message}"
       end
     end
   end
@@ -242,7 +238,6 @@ module Odsee
   # Generic Namespace for custom error errors and exceptions for the Cookbook
   #
   module Exceptions
-
     class UnsupportedAction < RuntimeError; end
     class ValidationError < RuntimeError; end
     class InvalidRegistryType < RuntimeError; end
@@ -284,7 +279,7 @@ module Odsee
       # @param [String] file
       # @return [Odsee::Exceptions::FileNotFound]
       # @api private
-      def initialize(path)
+      def initialize(_path)
         super "No such file found `#{file}`"
       end
     end

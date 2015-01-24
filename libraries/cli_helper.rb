@@ -118,9 +118,9 @@ module Odsee
         banner '--->>>-o-o-o-o-o-o-o-o->>  <<-o-o-o-o-o-o-o-o-<<<---'
         banner "#{run.flatten.join(' ')}", :yellow
         banner '<<-o-o-o-o-o-o-o-o-<<<---  --->>>-o-o-o-o-o-o-o-o->>'
-        retrier(on: Errno::ENOENT, sleep: ->(n) { 4**n }) {
+        retrier(on: Errno::ENOENT, sleep: ->(n) { 4**n }) do
           Chef::Log.info shell_out!(run.flatten.join(' ')).stdout
-        }
+        end
       end
     end
 
@@ -177,9 +177,9 @@ module Odsee
       __t__.content(node[:odsee][:admin_password])
       __t__.run_action(:create)
       cmd = "#{__dsccreg__} list-#{instance} -w #{__t__.path}"
-      lines = retrier(on: Errno::ENOENT, sleep: ->(n) { 4**n }) {
+      lines = retrier(on: Errno::ENOENT, sleep: ->(n) { 4**n }) do
         shell_out!(cmd).stdout.split("\n").reverse
-      }
+      end
       keys = lines.pop.split(' ').map { |line| line.downcase.to_sym }
       lines.delete_if { |l| l =~ /^--|(instance|agent)\(s\)\s(found|display)/ }
       lines.map { |line| zip_hash(keys, line.split(' ')) }[0]
@@ -206,7 +206,7 @@ module Odsee
         reg.nil? ? false : reg[:ipath] == path
       else
         fail InvalidRegistryType.new "Unknown instance type `#{instance}`; " \
-          "only `:agents` or `:servers` instances are supported"
+          'only `:agents` or `:servers` instances are supported'
       end
     end
 
@@ -282,12 +282,12 @@ module Odsee
     #
     # @return [Block]
     #
-    def retrier(options = {}, &block)
+    def retrier(options = {}, &_block)
       tries  = options.fetch(:tries, 4)
       wait   = options.fetch(:sleep, 1)
       on     = options.fetch(:on, StandardError)
       match  = options.fetch(:match, /.*/)
-      insure = options.fetch(:insure, Proc.new {})
+      insure = options.fetch(:insure, proc {})
 
       retries = 0
       retry_exception = nil
@@ -313,6 +313,5 @@ module Odsee
     end
 
     private #   P R O P R I E T À   P R I V A T A   Vietato L'accesso
-
   end
 end

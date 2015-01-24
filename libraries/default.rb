@@ -81,7 +81,7 @@ module Odsee
       # @raise [Odsee::Exceptions::InvalidHost]
       # @api private
       def host?
-        ->(host) { validate_host(name) }
+        ->(_host) { validate_host(name) }
       end
 
       # Validate the hostname, returns the IP address if valid, otherwise raises
@@ -124,7 +124,7 @@ module Odsee
       # @raise [Odsee::Exceptions::InvalidFilePath]
       # @api private
       def path?
-        ->(path) { validate_filepath(file) }
+        ->(_path) { validate_filepath(file) }
       end
 
       # Validate that the path specified is a file or directory, will raise
