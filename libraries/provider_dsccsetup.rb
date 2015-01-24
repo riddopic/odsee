@@ -66,8 +66,8 @@ class Chef::Provider::Dsccsetup < Chef::Provider::LWRPBase
     @current_resource = Chef::Resource::Dsccsetup.new(@new_resource.name)
     @current_resource.name(@new_resource.name)
 
-    unless ::File.exists?(which(@resource_name.to_s))
-      raise Odsee::Exceptions::ResourceNotFound
+    unless ::File.exist?(which(@resource_name.to_s))
+      fail Odsee::Exceptions::ResourceNotFound
     end
 
     @current_resource.created(ads_created?)
@@ -112,9 +112,9 @@ class Chef::Provider::Dsccsetup < Chef::Provider::LWRPBase
                     new_resource._?(:registry_ldap_port,  '-p'),
                     new_resource._?(:registry_ldaps_port, '-P')
         ensure
-          %w[new_resource.admin_pw_file.split.last
+          %w(new_resource.admin_pw_file.split.last
              new_resource.agent_pw_file.split.last
-             new_resource.cert_pw_file.split.last].each do |__pfile__|
+             new_resource.cert_pw_file.split.last).each do |__pfile__|
             ::File.unlink(__pfile__) if ::File.exist?(__pfile__)
           end
           lock.exit

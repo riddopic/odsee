@@ -66,8 +66,8 @@ class Chef::Resource::Dsadm < Chef::Resource::LWRPBase
   # @return [TrueClass, FalseClass]
   # @api private
   attribute :created,
-    kind_of: [TrueClass, FalseClass],
-    default: nil
+            kind_of: [TrueClass, FalseClass],
+            default: nil
 
   # Creates the Directory Server instance in an existing directory,
   # specified by the `instance_path`. The existing directory must be empty.
@@ -82,8 +82,8 @@ class Chef::Resource::Dsadm < Chef::Resource::LWRPBase
   #
   # @api public
   attribute :instance_path,
-    kind_of: String,
-    name_attribute: true
+            kind_of: String,
+            name_attribute: true
 
   # When true does not prompt for password and/or does not prompt for
   # confirmation before performing the operation.
@@ -97,8 +97,8 @@ class Chef::Resource::Dsadm < Chef::Resource::LWRPBase
   #
   # @api public
   attribute :no_inter,
-    kind_of: [TrueClass, FalseClass],
-    default: lazy { node[:odsee][:no_inter] }
+            kind_of: [TrueClass, FalseClass],
+            default: lazy { node[:odsee][:no_inter] }
 
   # The server instance owner user ID. The default is root.
   #
@@ -108,9 +108,9 @@ class Chef::Resource::Dsadm < Chef::Resource::LWRPBase
   #
   # @api public
   attribute :user_name,
-    kind_of: String,
-    default: lazy { node[:odsee][:dsadm][:user_name] },
-    regex: Chef::Config[:user_valid_regex]
+            kind_of: String,
+            default: lazy { node[:odsee][:dsadm][:user_name] },
+            regex: Chef::Config[:user_valid_regex]
 
   # The server instance owner user ID. The default is root.
   #
@@ -120,9 +120,9 @@ class Chef::Resource::Dsadm < Chef::Resource::LWRPBase
   #
   # @api public
   attribute :group_name,
-    kind_of: String,
-    default: lazy { node[:odsee][:dsadm][:group_name] },
-    regex: Chef::Config[:user_valid_regex]
+            kind_of: String,
+            default: lazy { node[:odsee][:dsadm][:group_name] },
+            regex: Chef::Config[:user_valid_regex]
 
   # The DSCC registry host name. By default it is nil, which sets it to
   # localhost.
@@ -133,8 +133,8 @@ class Chef::Resource::Dsadm < Chef::Resource::LWRPBase
   #
   # @api public
   attribute :hostname,
-    kind_of: [String, NilClass],
-    default: nil
+            kind_of: [String, NilClass],
+            default: nil
 
   # The port number to use for LDAP communication. Default is 389.
   #
@@ -145,8 +145,8 @@ class Chef::Resource::Dsadm < Chef::Resource::LWRPBase
   #
   # @api public
   attribute :ldap_port,
-    kind_of: Integer,
-    default: lazy { node[:odsee][:ldap_port] }
+            kind_of: Integer,
+            default: lazy { node[:odsee][:ldap_port] }
 
   # The port number to use for LDAPS communication. Default is 636.
   #
@@ -157,8 +157,8 @@ class Chef::Resource::Dsadm < Chef::Resource::LWRPBase
   #
   # @api public
   attribute :ldaps_port,
-    kind_of: Integer,
-    default: lazy { node[:odsee][:ldaps_port] }
+            kind_of: Integer,
+            default: lazy { node[:odsee][:ldaps_port] }
 
   # Defines the Directory Manager DN. The default is `cn=Directory Manager`.
   #
@@ -168,8 +168,8 @@ class Chef::Resource::Dsadm < Chef::Resource::LWRPBase
   #
   # @api public
   attribute :dn,
-    kind_of: String,
-    default: lazy { node[:odsee][:dn] }
+            kind_of: String,
+            default: lazy { node[:odsee][:dn] }
 
   # A file containing the Direcctory Service Manager password.
   #
@@ -180,8 +180,8 @@ class Chef::Resource::Dsadm < Chef::Resource::LWRPBase
   #
   # @api public
   attribute :admin_pw_file,
-    kind_of: Proc,
-    default: lazy { __admin_pw__ }
+            kind_of: Proc,
+            default: lazy { __admin_pw__ }
 
   # Starts Directory Server with the configuration used at the last
   # successful startup.
@@ -192,8 +192,8 @@ class Chef::Resource::Dsadm < Chef::Resource::LWRPBase
   #
   # @api public
   attribute :safe_mode,
-    kind_of: [TrueClass, FalseClass],
-    default: lazy { node[:odsee][:safe_mode] }
+            kind_of: [TrueClass, FalseClass],
+            default: lazy { node[:odsee][:safe_mode] }
 
   # Ensures manually modified schema is replicated to consumers.
   #
@@ -203,8 +203,8 @@ class Chef::Resource::Dsadm < Chef::Resource::LWRPBase
   #
   # @api public
   attribute :schema_push,
-    kind_of: [TrueClass, FalseClass],
-    default: lazy { node[:odsee][:schema_push] }
+            kind_of: [TrueClass, FalseClass],
+            default: lazy { node[:odsee][:schema_push] }
 
   # A file containing the certificate database password.
   #
@@ -215,8 +215,8 @@ class Chef::Resource::Dsadm < Chef::Resource::LWRPBase
   #
   # @api public
   attribute :cert_pw_file,
-    kind_of: Proc,
-    default: lazy { __cert_pw__ }
+            kind_of: Proc,
+            default: lazy { __cert_pw__ }
 
   # If the instance should be forcibly shut down. When used with
   # `stop-running-instances`, the command forcibly shuts down all the running
@@ -230,7 +230,6 @@ class Chef::Resource::Dsadm < Chef::Resource::LWRPBase
   #
   # @api public
   attribute :force,
-    kind_of: [TrueClass, FalseClass],
-    default: lazy { node[:odsee][:force] }
-
+            kind_of: [TrueClass, FalseClass],
+            default: lazy { node[:odsee][:force] }
 end

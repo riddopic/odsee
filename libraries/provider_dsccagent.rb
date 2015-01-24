@@ -67,8 +67,8 @@ class Chef::Provider::Dsccagent < Chef::Provider::LWRPBase
     @current_resource = Chef::Resource::Dsccagent.new(@new_resource.name)
     @current_resource.path(@new_resource.path)
 
-    unless ::File.exists?(which(@resource_name.to_s))
-      raise Odsee::Exceptions::ProviderResourceNotFound
+    unless ::File.exist?(which(@resource_name.to_s))
+      fail Odsee::Exceptions::ProviderResourceNotFound
     end
 
     @current_resource.created(created?)
@@ -107,9 +107,9 @@ class Chef::Provider::Dsccagent < Chef::Provider::LWRPBase
                     new_resource.path
           Chef::Log.info "DSCC agent instance initialized for #{new_resource}"
         ensure
-          %w[new_resource.admin_pw_file.split.last
+          %w(new_resource.admin_pw_file.split.last
              new_resource.agent_pw_file.split.last
-             new_resource.cert_pw_file.split.last].each do |__pfile__|
+             new_resource.cert_pw_file.split.last).each do |__pfile__|
             ::File.unlink(__pfile__) if ::File.exist?(__pfile__)
           end
         end

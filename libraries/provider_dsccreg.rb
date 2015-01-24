@@ -62,8 +62,8 @@ class Chef::Provider::Dsccreg < Chef::Provider::LWRPBase
     @current_resource = Chef::Resource::Dsccreg.new(@new_resource.name)
     @current_resource.path(@new_resource.path)
 
-    unless ::File.exists?(which(@resource_name.to_s))
-      raise Odsee::Exceptions::ResourceNotFound
+    unless ::File.exist?(which(@resource_name.to_s))
+      fail Odsee::Exceptions::ResourceNotFound
     end
 
     @current_resource.servers(check_for(:servers, @new_resource.path))
@@ -102,9 +102,9 @@ class Chef::Provider::Dsccreg < Chef::Provider::LWRPBase
                   new_resource.path
           Chef::Log.info 'DSCC agent instance added to the DSCC registry'
         ensure
-          %w[new_resource.admin_pw_file.split.last
+          %w(new_resource.admin_pw_file.split.last
              new_resource.agent_pw_file.split.last
-             new_resource.cert_pw_file.split.last].each do |__pfile__|
+             new_resource.cert_pw_file.split.last).each do |__pfile__|
             ::File.unlink(__pfile__) if ::File.exist?(__pfile__)
           end
         end
@@ -183,9 +183,9 @@ class Chef::Provider::Dsccreg < Chef::Provider::LWRPBase
                   new_resource.path
           Chef::Log.info 'Server instance added to the DSCC registry'
         ensure
-          %w[new_resource.admin_pw_file.split.last
+          %w(new_resource.admin_pw_file.split.last
              new_resource.agent_pw_file.split.last
-             new_resource.cert_pw_file.split.last].each do |__pfile__|
+             new_resource.cert_pw_file.split.last).each do |__pfile__|
             ::File.unlink(__pfile__) if ::File.exist?(__pfile__)
           end
         end
@@ -222,9 +222,9 @@ class Chef::Provider::Dsccreg < Chef::Provider::LWRPBase
                   new_resource.path
           Chef::Log.info "Server instance #{new_resource} has been removed."
         ensure
-          %w[new_resource.admin_pw_file.split.last
+          %w(new_resource.admin_pw_file.split.last
              new_resource.agent_pw_file.split.last
-             new_resource.cert_pw_file.split.last].each do |__pfile__|
+             new_resource.cert_pw_file.split.last).each do |__pfile__|
             ::File.unlink(__pfile__) if ::File.exist?(__pfile__)
           end
         end

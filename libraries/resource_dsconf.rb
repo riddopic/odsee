@@ -66,8 +66,8 @@ class Chef::Resource::Dsconf < Chef::Resource::LWRPBase
   #
   # @api private
   attribute :created,
-    kind_of: [TrueClass, FalseClass],
-    default: nil
+            kind_of: [TrueClass, FalseClass],
+            default: nil
 
   # The DSCC registry host name. By default it is nil, which sets it to
   # localhost.
@@ -78,8 +78,8 @@ class Chef::Resource::Dsconf < Chef::Resource::LWRPBase
   #
   # @api public
   attribute :hostname,
-    kind_of: [String, NilClass],
-    default: nil
+            kind_of: [String, NilClass],
+            default: nil
 
   # The port number to use for LDAP communication. Default is 389.
   #
@@ -90,8 +90,8 @@ class Chef::Resource::Dsconf < Chef::Resource::LWRPBase
   #
   # @api public
   attribute :ldap_port,
-    kind_of: Integer,
-    default: lazy { node[:odsee][:ldap_port] }
+            kind_of: Integer,
+            default: lazy { node[:odsee][:ldap_port] }
 
   # The name of the backend suffix database
   #
@@ -102,8 +102,8 @@ class Chef::Resource::Dsconf < Chef::Resource::LWRPBase
   #
   # @api public
   attribute :db_name,
-    kind_of: String,
-    default: nil
+            kind_of: String,
+            default: nil
 
   # The path to the backend suffix database
   #
@@ -114,8 +114,8 @@ class Chef::Resource::Dsconf < Chef::Resource::LWRPBase
   #
   # @api public
   attribute :db_path,
-    kind_of: String,
-    default: nil
+            kind_of: String,
+            default: nil
 
   # Boolean, used to specify if the `create_suffix` command should not create a
   # top entry for the suffix. By default, a top-level entry is created when a
@@ -128,8 +128,8 @@ class Chef::Resource::Dsconf < Chef::Resource::LWRPBase
   #
   # @api public
   attribute :no_top_entry,
-    kind_of: [TrueClass, FalseClass],
-    default: lazy { node[:odsee][:no_top_entry] }
+            kind_of: [TrueClass, FalseClass],
+            default: lazy { node[:odsee][:no_top_entry] }
 
   # The Suffix DN (Distinguished Name) for the given resource
   #
@@ -140,8 +140,8 @@ class Chef::Resource::Dsconf < Chef::Resource::LWRPBase
   #
   # @api public
   attribute :suffix,
-    kind_of: String,
-    name_attribute: true
+            kind_of: String,
+            name_attribute: true
 
   # Launches a task and returns the command line accessible immediately
   #
@@ -152,8 +152,8 @@ class Chef::Resource::Dsconf < Chef::Resource::LWRPBase
   #
   # @api public
   attribute :async,
-    kind_of: [TrueClass, FalseClass],
-    default: nil
+            kind_of: [TrueClass, FalseClass],
+            default: nil
 
   # Launches a task and returns the command line accessible immediately
   #
@@ -164,8 +164,8 @@ class Chef::Resource::Dsconf < Chef::Resource::LWRPBase
   #
   # @api public
   attribute :incremental,
-    kind_of: [TrueClass, FalseClass],
-    default: nil
+            kind_of: [TrueClass, FalseClass],
+            default: nil
 
   # Launches a task and returns the command line accessible immediately
   #
@@ -176,8 +176,8 @@ class Chef::Resource::Dsconf < Chef::Resource::LWRPBase
   #
   # @api public
   attribute :exclude_dn,
-    kind_of: [TrueClass, FalseClass],
-    default: nil
+            kind_of: [TrueClass, FalseClass],
+            default: nil
 
   # Path and filename for file in LDIF format to import, can be gzip compressed
   #
@@ -187,7 +187,7 @@ class Chef::Resource::Dsconf < Chef::Resource::LWRPBase
   #
   # @api public
   attribute :ldif_file,
-    kind_of: String
+            kind_of: String
 
   # A file containing the Direcctory Service Manager password.
   #
@@ -198,7 +198,6 @@ class Chef::Resource::Dsconf < Chef::Resource::LWRPBase
   #
   # @api public
   attribute :admin_pw_file,
-    kind_of: Proc,
-    default: lazy { __admin_pw__ }
-
+            kind_of: Proc,
+            default: lazy { __admin_pw__ }
 end

@@ -66,8 +66,8 @@ class Chef::Provider::Dsadm < Chef::Provider::LWRPBase
     @current_resource = Chef::Resource::Dsadm.new(@new_resource.name)
     @current_resource.agent_path(@new_resource.agent_path)
 
-    unless ::File.exists?(which(@resource_name.to_s))
-      raise Odsee::Exceptions::ResourceNotFound
+    unless ::File.exist?(which(@resource_name.to_s))
+      fail Odsee::Exceptions::ResourceNotFound
     end
 
     @current_resource.created(created?)
@@ -128,9 +128,9 @@ class Chef::Provider::Dsadm < Chef::Provider::LWRPBase
                 new_resource.instance_path
           Chef::Log.info 'DSCC Directory Server instance initialized'
         ensure
-          %w[new_resource.admin_pw_file.split.last
+          %w(new_resource.admin_pw_file.split.last
              new_resource.agent_pw_file.split.last
-             new_resource.cert_pw_file.split.last].each do |__pfile__|
+             new_resource.cert_pw_file.split.last).each do |__pfile__|
             ::File.unlink(__pfile__) if ::File.exist?(__pfile__)
           end
         end

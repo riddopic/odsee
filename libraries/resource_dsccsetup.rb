@@ -66,8 +66,8 @@ class Chef::Resource::Dsccsetup < Chef::Resource::LWRPBase
   #
   # @api private
   attribute :created,
-    kind_of: [TrueClass, FalseClass],
-    default: nil
+            kind_of: [TrueClass, FalseClass],
+            default: nil
 
   # A do nothing attribute, this prevents the base temporal continuum
   # gravitational tachyons from invading.
@@ -78,8 +78,8 @@ class Chef::Resource::Dsccsetup < Chef::Resource::LWRPBase
   #
   # @api private
   attribute :name,
-    kind_of: [String, Symbol],
-    name_attribute: true
+            kind_of: [String, Symbol],
+            name_attribute: true
 
   # A file containing the Direcctory Service Manager password.
   #
@@ -90,8 +90,8 @@ class Chef::Resource::Dsccsetup < Chef::Resource::LWRPBase
   #
   # @api public
   attribute :admin_pw_file,
-    kind_of: Proc,
-    default: lazy { __admin_pw__ }
+            kind_of: Proc,
+            default: lazy { __admin_pw__ }
 
   # Specifies the port for LDAP traffic. The default is 3998.
   #
@@ -102,8 +102,8 @@ class Chef::Resource::Dsccsetup < Chef::Resource::LWRPBase
   #
   # @api public
   attribute :registry_ldap_port,
-    kind_of: String,
-    default: lazy { node[:odsee][:registry_ldap_port] }
+            kind_of: String,
+            default: lazy { node[:odsee][:registry_ldap_port] }
 
   # Specifies the secure SSL port for LDAP traffic. The default is 3999.
   #
@@ -114,8 +114,8 @@ class Chef::Resource::Dsccsetup < Chef::Resource::LWRPBase
   #
   # @api public
   attribute :registry_ldaps_port,
-    kind_of: String,
-    default: lazy { node[:odsee][:registry_ldaps_port] }
+            kind_of: String,
+            default: lazy { node[:odsee][:registry_ldaps_port] }
 
   # When true does not prompt for password and/or does not prompt for
   # confirmation before performing the operation.
@@ -127,7 +127,6 @@ class Chef::Resource::Dsccsetup < Chef::Resource::LWRPBase
   #
   # @api public
   attribute :no_inter,
-    kind_of: [TrueClass, FalseClass],
-    default: lazy { node[:odsee][:no_inter] }
-
+            kind_of: [TrueClass, FalseClass],
+            default: lazy { node[:odsee][:no_inter] }
 end

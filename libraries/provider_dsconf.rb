@@ -62,8 +62,8 @@ class Chef::Provider::Dsconf < Chef::Provider::LWRPBase
     @current_resource = Chef::Resource::Dsconf.new(@new_resource.name)
     @current_resource.name(@new_resource.name)
 
-    unless ::File.exists?(which(@resource_name.to_s))
-      raise Odsee::Exceptions::ResourceNotFound
+    unless ::File.exist?(which(@resource_name.to_s))
+      fail Odsee::Exceptions::ResourceNotFound
     end
 
     @current_resource.created(created)
@@ -238,7 +238,7 @@ class Chef::Provider::Dsconf < Chef::Provider::LWRPBase
                new_resource._?(:exclude_dn,  '-x'),
                new_resource.ldif_file,
                new_resource.suffix
-         Chef::Log.info "#{new_resource} has been removed from the registry."
+        Chef::Log.info "#{new_resource} has been removed from the registry."
       end
       new_resource.updated_by_last_action(true)
     else

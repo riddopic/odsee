@@ -66,8 +66,8 @@ class Chef::Resource::Dsccagent < Chef::Resource::LWRPBase
   # @return [TrueClass, FalseClass]
   # @api private
   attribute :created,
-    kind_of: [TrueClass, FalseClass],
-    default: nil
+            kind_of: [TrueClass, FalseClass],
+            default: nil
 
   # Boolean, true if a DSCC agent instance has been configured as a SNMP agent,
   # otherwise false
@@ -77,8 +77,8 @@ class Chef::Resource::Dsccagent < Chef::Resource::LWRPBase
   # @return [TrueClass, FalseClass]
   # @api private
   attribute :enabled,
-    kind_of: [TrueClass, FalseClass],
-    default: nil
+            kind_of: [TrueClass, FalseClass],
+            default: nil
 
   # Boolean, true when the DSCC agent instance is running. The DSCC agent will
   # be able to start if it was registered in the DSCC registry, or if the SNMP
@@ -89,8 +89,8 @@ class Chef::Resource::Dsccagent < Chef::Resource::LWRPBase
   # @return [TrueClass, FalseClass]
   # @api private
   attribute :running,
-    kind_of: [TrueClass, FalseClass],
-    default: nil
+            kind_of: [TrueClass, FalseClass],
+            default: nil
 
   # When true does not prompt for password and/or does not prompt for
   # confirmation before performing the operation.
@@ -104,8 +104,8 @@ class Chef::Resource::Dsccagent < Chef::Resource::LWRPBase
   #
   # @api public
   attribute :no_inter,
-    kind_of: [TrueClass, FalseClass],
-    default: lazy { node[:odsee][:no_inter] }
+            kind_of: [TrueClass, FalseClass],
+            default: lazy { node[:odsee][:no_inter] }
 
   # Specifies the port for the DSCC agent. The default is 3997.
   #
@@ -116,8 +116,8 @@ class Chef::Resource::Dsccagent < Chef::Resource::LWRPBase
   #
   # @api public
   attribute :agent_port,
-    kind_of: String,
-    default: lazy { node[:odsee][:agent_port] }
+            kind_of: String,
+            default: lazy { node[:odsee][:agent_port] }
 
   # A file containing the DSCC agent password.
   #
@@ -128,8 +128,8 @@ class Chef::Resource::Dsccagent < Chef::Resource::LWRPBase
   #
   # @api public
   attribute :agent_pw_file,
-    kind_of: Proc,
-    default: lazy { __agent_pw__ }
+            kind_of: Proc,
+            default: lazy { __agent_pw__ }
 
   # Full path to the existing DSCC agent instance. The default path is to use:
   # install-path/var/dcc/agent
@@ -141,8 +141,8 @@ class Chef::Resource::Dsccagent < Chef::Resource::LWRPBase
   #
   # @api public
   attribute :path,
-    kind_of: String,
-    name_attribute: true
+            kind_of: String,
+            name_attribute: true
 
   # Boolean, true if SNMP version 3 should be used, otherwise false.
   #
@@ -153,8 +153,8 @@ class Chef::Resource::Dsccagent < Chef::Resource::LWRPBase
   #
   # @api public
   attribute :snmp_v3,
-    kind_of: [TrueClass, FalseClass],
-    default: lazy { node[:odsee][:snmp_v3] }
+            kind_of: [TrueClass, FalseClass],
+            default: lazy { node[:odsee][:snmp_v3] }
 
   # The port number to use for SNMP traffic. Default is 3996.
   #
@@ -165,8 +165,8 @@ class Chef::Resource::Dsccagent < Chef::Resource::LWRPBase
   #
   # @api public
   attribute :snmp_port,
-    kind_of: [Integer],
-    default: lazy { node[:odsee][:snmp_port] }
+            kind_of: [Integer],
+            default: lazy { node[:odsee][:snmp_port] }
 
   # The port number to use for traffic from Directory Servers to agent. The
   # default is 3995.
@@ -178,8 +178,8 @@ class Chef::Resource::Dsccagent < Chef::Resource::LWRPBase
   #
   # @api public
   attribute :ds_port,
-    kind_of: Integer,
-    default: lazy { node[:odsee][:ds_port] }
+            kind_of: Integer,
+            default: lazy { node[:odsee][:ds_port] }
 
   # A file containing the Direcctory Service Manager password.
   #
@@ -190,7 +190,6 @@ class Chef::Resource::Dsccagent < Chef::Resource::LWRPBase
   #
   # @api public
   attribute :admin_pw_file,
-    kind_of: Proc,
-    default: lazy { __admin_pw__ }
-
+            kind_of: Proc,
+            default: lazy { __admin_pw__ }
 end

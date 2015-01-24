@@ -65,8 +65,8 @@ class Chef::Resource::Dsccreg < Chef::Resource::LWRPBase
   # @return [TrueClass, FalseClass]
   # @api private
   attribute :servers,
-    kind_of: [TrueClass, FalseClass],
-    default: nil
+            kind_of: [TrueClass, FalseClass],
+            default: nil
 
   # Boolean, returns true if the agent instance has been added to the DSCC
   # registry, otherwise false
@@ -76,8 +76,8 @@ class Chef::Resource::Dsccreg < Chef::Resource::LWRPBase
   # @return [TrueClass, FalseClass]
   # @api private
   attribute :agents,
-    kind_of: [TrueClass, FalseClass],
-    default: nil
+            kind_of: [TrueClass, FalseClass],
+            default: nil
 
   # Used to provide an optional description for the agent instance.
   #
@@ -88,8 +88,8 @@ class Chef::Resource::Dsccreg < Chef::Resource::LWRPBase
   #
   # @api public
   attribute :description,
-    kind_of: String,
-    default: lazy { "'DOB: #{Time.now.strftime('%v')}'" }
+            kind_of: String,
+            default: lazy { "'DOB: #{Time.now.strftime('%v')}'" }
 
   # The DSCC registry host name. By default, the dsccreg command uses the local
   # host name returned by the operating system.
@@ -100,8 +100,8 @@ class Chef::Resource::Dsccreg < Chef::Resource::LWRPBase
   #
   # @api public
   attribute :hostname,
-    kind_of: String,
-    default: nil
+            kind_of: String,
+            default: nil
 
   # A file containing the DSCC agent password.
   #
@@ -112,8 +112,8 @@ class Chef::Resource::Dsccreg < Chef::Resource::LWRPBase
   #
   # @api public
   attribute :agent_pw_file,
-    kind_of: Proc,
-    default: lazy { __agent_pw__ }
+            kind_of: Proc,
+            default: lazy { __agent_pw__ }
 
   # Full path to the existing DSCC agent or server instance to register
   #
@@ -124,8 +124,8 @@ class Chef::Resource::Dsccreg < Chef::Resource::LWRPBase
   #
   # @api public
   attribute :path,
-    kind_of: String,
-    name_attribute: true
+            kind_of: String,
+            name_attribute: true
 
   # If the instance should be forcibly shut down. When used with
   # `stop-running-instances`, the command forcibly shuts down all the running
@@ -139,8 +139,8 @@ class Chef::Resource::Dsccreg < Chef::Resource::LWRPBase
   #
   # @api public
   attribute :force,
-    kind_of: [TrueClass, FalseClass],
-    default: lazy { node[:odsee][:force] }
+            kind_of: [TrueClass, FalseClass],
+            default: lazy { node[:odsee][:force] }
 
   # Defines the Directory Manager DN. The default is cn=Directory Manager.
   #
@@ -150,8 +150,8 @@ class Chef::Resource::Dsccreg < Chef::Resource::LWRPBase
   #
   # @api public
   attribute :dn,
-    kind_of: String,
-    default: lazy { node[:odsee][:dn] }
+            kind_of: String,
+            default: lazy { node[:odsee][:dn] }
 
   # A file containing the Direcctory Service Manager password.
   #
@@ -162,8 +162,8 @@ class Chef::Resource::Dsccreg < Chef::Resource::LWRPBase
   #
   # @api public
   attribute :admin_pw_file,
-    kind_of: Proc,
-    default: lazy { __admin_pw__ }
+            kind_of: Proc,
+            default: lazy { __admin_pw__ }
 
   # Specifies port as the DSCC agent port to use for communicating with this
   # server instance.
@@ -175,7 +175,6 @@ class Chef::Resource::Dsccreg < Chef::Resource::LWRPBase
   #
   # @api public
   attribute :agent_port,
-    kind_of: String,
-    default: lazy { node[:odsee][:registry_ldap_port] }
-
+            kind_of: String,
+            default: lazy { node[:odsee][:registry_ldap_port] }
 end
