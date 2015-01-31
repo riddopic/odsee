@@ -60,7 +60,7 @@ class Chef::Resource::Dsccreg < Chef::Resource::LWRPBase
   # Boolean, returns true if the server instance has been added to the DSCC
   # registry, otherwise false
   #
-  # @note This is a state attribute `state_attrs` which the provider sets
+  # @note This is a state attribute or `state_attrs` set by the provider
   # @param [TrueClass, FalseClass]
   # @return [TrueClass, FalseClass]
   # @api private
@@ -71,7 +71,7 @@ class Chef::Resource::Dsccreg < Chef::Resource::LWRPBase
   # Boolean, returns true if the agent instance has been added to the DSCC
   # registry, otherwise false
   #
-  # @note This is a state attribute `state_attrs` which the provider sets
+  # @note This is a state attribute or `state_attrs` set by the provider
   # @param [TrueClass, FalseClass]
   # @return [TrueClass, FalseClass]
   # @api private
@@ -102,18 +102,6 @@ class Chef::Resource::Dsccreg < Chef::Resource::LWRPBase
   attribute :hostname,
             kind_of: String,
             default: nil
-
-  # A file containing the DSCC agent password.
-  #
-  # @param [String] agent_pw_file
-  #   File to use to store the DSCC agent password.
-  #
-  # @return [String]
-  #
-  # @api public
-  attribute :agent_pw_file,
-            kind_of: Proc,
-            default: lazy { __agent_pw__ }
 
   # Full path to the existing DSCC agent or server instance to register
   #
@@ -153,18 +141,6 @@ class Chef::Resource::Dsccreg < Chef::Resource::LWRPBase
             kind_of: String,
             default: lazy { node[:odsee][:dn] }
 
-  # A file containing the Direcctory Service Manager password.
-  #
-  # @param [String] admin_pw_file
-  #   File to use to store the Direcctory Service Manager password.
-  #
-  # @return [String]
-  #
-  # @api public
-  attribute :admin_pw_file,
-            kind_of: Proc,
-            default: lazy { __admin_pw__ }
-
   # Specifies port as the DSCC agent port to use for communicating with this
   # server instance.
   #
@@ -176,5 +152,21 @@ class Chef::Resource::Dsccreg < Chef::Resource::LWRPBase
   # @api public
   attribute :agent_port,
             kind_of: String,
-            default: lazy { node[:odsee][:registry_ldap_port] }
+            default: lazy { node[:odsee][:agent_port] }
+
+  # When true does not prompt for password and/or does not prompt for
+  # confirmation before performing the operation.
+  #
+  # @note This should always return nil.
+  #
+  # @param [TrueClass, FalseClass] no_inter
+  #   If you would like to be prompted to confirm actions.
+  #
+  # @return [TrueClass, FalseClass]
+  #
+  # @api public
+  attribute :no_inter,
+            kind_of: [TrueClass, FalseClass],
+            default: lazy { node[:odsee][:no_inter] }
+
 end

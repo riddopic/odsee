@@ -44,7 +44,7 @@ class Chef::Resource::Dsconf < Chef::Resource::LWRPBase
   #
   # @return [Chef::Resource::Dsccsetup]
   # @api private
-  state_attrs :created
+  state_attrs :created, :empty
 
   # Sets the default action
   #
@@ -58,6 +58,11 @@ class Chef::Resource::Dsconf < Chef::Resource::LWRPBase
   # @api private
   provider_base Chef::Provider::Dsconf
 
+  # Specifies extra options to pass to the `#info` method
+  # @return [String]
+  # @api private
+  attribute :info_opts, default: '-c'
+
   # Boolean, returns true if...WHAT?..WHAT?..WHAT?..WHAT?..?.., otherwise false
   #
   # @param [TrueClass, FalseClass]
@@ -66,6 +71,17 @@ class Chef::Resource::Dsconf < Chef::Resource::LWRPBase
   #
   # @api private
   attribute :created,
+            kind_of: [TrueClass, FalseClass],
+            default: nil
+
+  # Boolean, returns true if...WHAT?..WHAT?..WHAT?..WHAT?..?.., otherwise false
+  #
+  # @param [TrueClass, FalseClass]
+  #
+  # @return [TrueClass, FalseClass]
+  #
+  # @api private
+  attribute :empty,
             kind_of: [TrueClass, FalseClass],
             default: nil
 
@@ -143,6 +159,18 @@ class Chef::Resource::Dsconf < Chef::Resource::LWRPBase
             kind_of: String,
             name_attribute: true
 
+  # Full path to the existing DSCC agent or server instance to register
+  #
+  # @param [String] path
+  #   Path to existing DSCC server or agent instance
+  #
+  # @return [String]
+  #
+  # @api public
+  attribute :path,
+            kind_of: String,
+            default: nil
+
   # Launches a task and returns the command line accessible immediately
   #
   # @param [TrueClass, FalseClass] async
@@ -153,7 +181,7 @@ class Chef::Resource::Dsconf < Chef::Resource::LWRPBase
   # @api public
   attribute :async,
             kind_of: [TrueClass, FalseClass],
-            default: nil
+            default: true
 
   # Launches a task and returns the command line accessible immediately
   #
@@ -166,6 +194,18 @@ class Chef::Resource::Dsconf < Chef::Resource::LWRPBase
   attribute :incremental,
             kind_of: [TrueClass, FalseClass],
             default: nil
+
+  # Boolean, when true specifies to not ask for confirmation before accepting
+  # non-trusted server certificates
+  #
+  # @param [TrueClass, FalseClass]
+  #
+  # @return [TrueClass, FalseClass]
+  #
+  # @api public
+  attribute :accept_cert,
+            kind_of: [TrueClass, FalseClass],
+            default: true
 
   # Launches a task and returns the command line accessible immediately
   #
@@ -189,15 +229,4 @@ class Chef::Resource::Dsconf < Chef::Resource::LWRPBase
   attribute :ldif_file,
             kind_of: String
 
-  # A file containing the Direcctory Service Manager password.
-  #
-  # @param [String] file
-  #   File to use to store the Direcctory Service Manager password.
-  #
-  # @return [String]
-  #
-  # @api public
-  attribute :admin_pw_file,
-            kind_of: Proc,
-            default: lazy { __admin_pw__ }
 end

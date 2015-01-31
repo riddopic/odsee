@@ -1,4 +1,5 @@
 DEPENDENCIES
+  chef-zero (>= 2.0.1)
   garcon
     path: ../../../../git/cookbooks/garcon
   odsee
@@ -18,10 +19,8 @@ GRAPH
     chef_handler (>= 1.1.6)
     yum (>= 3.5.1)
   odsee (0.1.0)
-    chef-zero (>= 2.0.1)
     chef_handler (>= 1.1.6)
     garcon (~> 0.8.0)
-    yum (>= 2.0.1)
   sudo (2.7.1)
   test_fixtures (0.1.0)
     chef_handler (>= 0.0.0)

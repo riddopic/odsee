@@ -29,6 +29,11 @@
 class Chef::Provider::Dsconf < Chef::Provider::LWRPBase
   include Odsee
 
+  def initialize(name, run_context = nil)
+    super
+    @auth_required = true
+  end
+
   use_inline_resources if defined?(:use_inline_resources)
 
   # Boolean indicating if WhyRun is supported by this provider
@@ -49,6 +54,9 @@ class Chef::Provider::Dsconf < Chef::Provider::LWRPBase
     if @new_resource.created.nil?
       @new_resource.created(@current_resource.created)
     end
+    if @new_resource.empty.nil?
+      @new_resource.empty(@current_resource.empty)
+    end
   end
 
   # Load and return the current resource.
@@ -66,7 +74,8 @@ class Chef::Provider::Dsconf < Chef::Provider::LWRPBase
       fail Odsee::Exceptions::ResourceNotFound
     end
 
-    @current_resource.created(created)
+    @current_resource.created(suffix_created?)
+    @current_resource.empty(empty_suffix?)
     @current_resource
   end
 
@@ -82,32 +91,48 @@ class Chef::Provider::Dsconf < Chef::Provider::LWRPBase
   #   Specifies a database name.
   # @param [String] db_path
   #   Specifies database directory and path.
+  # @param [String] accept_cert
+  #   Specifies to not ask for confirmation before accepting non-trusted server
+  #   certificates.
   # @param [String] no_top_entry
   #   Boolean, used to specify if the `create_suffix` command should not create
   #   a top entry for the suffix. By default, a top-level entry is created when
   #   a new suffix is created (on the condition that the suffix starts with
   #   `dc=, c=, o= or ou=`). The default is false.
+  # @param [String] admin_pw_file
+  #   Uses `password` from `admin_pw_file` file to access agent configuration.
+  #
   # @param [String] suffix
-  #   Suffix DN (Distinguished Name).
+  #   Suffix DN (Distinguished Name)
   #
   # @return [Chef::Resource::Dsconf]
   #
   # @api private
   def action_create_suffix
-    if @new_resource.created
+    if @current_resource.created
       Chef::Log.info "#{new_resource} already created - nothing to do"
     else
       converge_by "Creating #{new_resource} suffix entry in the DIT" do
-        dsconf :create_suffix,
-               new_resource._?(:hostname,     '-h'),
-               new_resource._?(:ldap_port,    '-p'),
-               new_resource._?(:db_name,      '-B'),
-               new_resource._?(:db_path,      '-L'),
-               new_resource._?(:no_top_entry, '-N'),
-               new_resource.suffix
-        Chef::Log.info "DIT entry created for #{new_resource} suffix"
+        begin
+          dsconf :create_suffix,
+                 new_resource._?(:hostname,      '-h'),
+                 new_resource._?(:ldap_port,     '-p'),
+                 new_resource._?(:db_name,       '-B'),
+                 new_resource._?(:db_path,       '-L'),
+                 new_resource._?(:accept_cert,   '-c'),
+                 new_resource._?(:no_top_entry,  '-N'),
+                 new_resource._?(:admin_pw_file, '-w'),
+                 new_resource.suffix
+          Chef::Log.info "DIT entry created for #{new_resource} suffix"
+        ensure
+          %w(new_resource.admin_pw_file.split.last
+             new_resource.agent_pw_file.split.last
+             new_resource.cert_pw_file.split.last).each do |__pfile__|
+            ::File.unlink(__pfile__) if ::File.exist?(__pfile__)
+          end
+        end
+        new_resource.updated_by_last_action(true)
       end
-      new_resource.updated_by_last_action(true)
     end
     load_new_resource_state
     @current_resource.created(true)
@@ -128,7 +153,7 @@ class Chef::Provider::Dsconf < Chef::Provider::LWRPBase
   #
   # @api private
   def action_delete_suffix
-    if @new_resource.created
+    if @current_resource.created
       converge_by "Deleting #{new_resource} suffix entry from the DIT" do
         dsconf :create_suffix,
                new_resource._?(:hostname,  '-h'),
@@ -227,24 +252,26 @@ class Chef::Provider::Dsconf < Chef::Provider::LWRPBase
   #
   # @api private
   def action_import
-    if empty_suffix?
-      converge_by 'Populating suffix with LDIF data' do
+    if @current_resource.empty
+      converge_by "Populating #{new_resource.suffix} with LDIF content from " \
+                  "#{new_resource.ldif_file}" do
         dsconf :import,
-               new_resource._?(:hostname,    '-H'),
-               new_resource._?(:port,        '-p'),
-               new_resource._?(:async,       '-a'),
-               new_resource._?(:incremental, '-K'),
-               new_resource._?(:opts,        '-f'),
-               new_resource._?(:exclude_dn,  '-x'),
+               new_resource._?(:hostname,      '-H'),
+               new_resource._?(:port,          '-p'),
+               new_resource._?(:async,       '-aei'),
+               new_resource._?(:incremental,   '-K'),
+               new_resource._?(:opts,          '-f'),
+               new_resource._?(:exclude_dn,    '-x'),
+               new_resource._?(:admin_pw_file, '-w'),
                new_resource.ldif_file,
                new_resource.suffix
-        Chef::Log.info "#{new_resource} has been removed from the registry."
+        Chef::Log.info "#{new_resource.suffix} has been populated."
       end
       new_resource.updated_by_last_action(true)
     else
-      Chef::Log.info "#{new_resource} does not exists - nothing to do"
+      Chef::Log.info "#{new_resource.suffix} already populated - nothing to do"
     end
     load_new_resource_state
-    @new_resource.enabled(false)
+    @new_resource.empty(false)
   end
 end

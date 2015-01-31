@@ -179,6 +179,9 @@ GEM
     interception (0.5)
     ipaddress (0.8.0)
     json (1.8.1)
+    kitchen-binding (0.2.1)
+      pry-remote (~> 0.1.8)
+      test-kitchen (~> 1.2.1)
     kitchen-docker (1.5.0)
       test-kitchen (>= 1.0.0)
     kitchen-ec2 (0.8.0)
@@ -241,6 +244,9 @@ GEM
       coderay (~> 1.1.0)
       method_source (~> 0.8.1)
       slop (~> 3.4)
+    pry-remote (0.1.8)
+      pry (~> 0.9)
+      slop (~> 3.0)
     rack (1.6.0)
     rainbow (2.0.0)
     rake (10.4.2)
@@ -353,6 +359,7 @@ DEPENDENCIES
   guard-yard
   hoodie (>= 0.4.3)
   inch
+  kitchen-binding
   kitchen-docker
   kitchen-ec2
   kitchen-vagrant

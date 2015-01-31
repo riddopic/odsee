@@ -20,6 +20,9 @@
 # limitations under the License.
 #
 
+chef_gem('net-ldap')  { action :nothing }.run_action(:install)
+require 'net/ldap' unless defined?(Net::LDAP)
+
 single_include 'garcon::default'
 
 concurrent 'Odsee::Install' do
@@ -49,10 +52,3 @@ zip_file node[:odsee][:install_dir] do
   not_if { ::File.directory?(node[:odsee][:agent_path].call) }
   action :unzip
 end
-
-# directory node[:odsee][:registry_path].call do
-#   owner node[:odsee][:dsadm][:user_name]
-#   group node[:odsee][:dsadm][:group_name]
-#   mode 00755
-#   action :create
-# end

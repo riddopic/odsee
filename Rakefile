@@ -1,8 +1,5 @@
 # encoding: UTF-8
 
-# require 'chef'
-# require 'open-uri'
-
 task default: 'test'
 
 desc 'Run all tests except `kitchen`'

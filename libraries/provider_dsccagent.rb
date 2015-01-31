@@ -1,6 +1,6 @@
 # encoding: UTF-8
 #
-# Cookbook Name:: garcon
+# Cookbook Name:: odsee
 # HWRP:: dsccagent
 #
 # Author: Stefano Harding <riddopic@gmail.com>
@@ -93,8 +93,6 @@ class Chef::Provider::Dsccagent < Chef::Provider::LWRPBase
   #
   # @api private
   def action_create
-    banner '｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡' \
-           '｡｡｡｡｡｡'.magenta
     if @current_resource.created
       Chef::Log.info "#{new_resource} already created - nothing to do"
     else
@@ -118,8 +116,6 @@ class Chef::Provider::Dsccagent < Chef::Provider::LWRPBase
     end
     load_new_resource_state
     @new_resource.created(true)
-    banner '｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡' \
-           '｡｡｡｡｡｡'.magenta
   end
 
   # Deletes a DSCC agent instance.

@@ -1,6 +1,6 @@
 # encoding: UTF-8
 #
-# Cookbook Name:: garcon
+# Cookbook Name:: odsee
 # HWRP:: dsadm
 #
 # Author: Stefano Harding <riddopic@gmail.com>
@@ -47,9 +47,6 @@ class Chef::Provider::Dsadm < Chef::Provider::LWRPBase
     if @new_resource.created.nil?
       @new_resource.created(@current_resource.created)
     end
-    if @new_resource.enabled.nil?
-      @new_resource.enabled(@current_resource.enabled)
-    end
     if @new_resource.running.nil?
       @new_resource.running(@current_resource.running)
     end
@@ -64,7 +61,7 @@ class Chef::Provider::Dsadm < Chef::Provider::LWRPBase
   # @api private
   def load_current_resource
     @current_resource = Chef::Resource::Dsadm.new(@new_resource.name)
-    @current_resource.agent_path(@new_resource.agent_path)
+    @current_resource.instance_path(@new_resource.instance_path)
 
     unless ::File.exist?(which(@resource_name.to_s))
       fail Odsee::Exceptions::ResourceNotFound
@@ -101,8 +98,8 @@ class Chef::Provider::Dsadm < Chef::Provider::LWRPBase
   #   user.
   # @param [String] dn
   #   Defines the Directory Manager DN. The default is cn=Directory Manager.
-  # @param [String] agent_pwd_file
-  #   Reads the DSCC agent password from `pwd_file`.
+  # @param [String] admin_pw_file
+  #   Uses `password` from `admin_pw_file` file to access agent configuration.
   # @param [String] instance_path
   #   Full path to the Directory Server instance.
   #
@@ -189,7 +186,7 @@ class Chef::Provider::Dsadm < Chef::Provider::LWRPBase
               new_resource._?(:safe_mode,              '-E'),
               new_resource._?(:no_inter,               '-i'),
               new_resource._?(:schema_push, '--schema-push'),
-              new_resource._?(:cert_pw_file,           '-W'),
+              # new_resource._?(:cert_pw_file,         '-W'),
               new_resource.instance_path
         Chef::Log.info "Directory Server instance started for #{new_resource}"
       end

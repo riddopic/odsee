@@ -56,182 +56,191 @@ module Odsee
     end
   end
 
-  class Ldap
-    # Configuration of the directory server is almost entirely via ldap objects.
-    # This class enables LDAP connectivity to the directory server via the net-
-    # ldap library.
-    #
-    # To make use of most methods in this library, you will need to pass in a
-    # resource object for the connection that has the following methods:
-    #
-    # host:: the ldap host to connect to.
-    # port:: the ldap port to connect to
-    # auth:: either a hash with the bind_dn and password to use, or a
-    # string that identifies the name of a databag item.
-    #               see the documentation in the README.md for details.
-    # databag:: the name of the databag in which to lookup the auth
-    #
-    # The main user of this library is the ldap_entry resource, which has
-    # sensible defaults for these three items.
+  class LDAP
+
+    # @!attribute [rw] ldap
+    #   @return [Odsee::LDAP] authenticated Odsee::LDAP connection object
     attr_accessor :ldap
 
-    # Chef libraries are evaluated before the recipe that places the chef_gem
-    # that it needs is put into place.
-    # This places two constraints on this library:
-    #   1) A 'require' must be done in a method
-    #   2) This class cannot use 'Subclass < Superclass'
-    # As Net::LDAP is a class it cannot be included as a module
+    # @!attribute [ro] base
+    #   @return [String] the value of the attribute base
+    attr_reader :base
 
-    def initialize
-      require 'rubygems'
-      require 'net-ldap'
-      require 'cicphash'
+    # @!attribute [ro] host
+    #   @return [String] the value of the attribute host
+    attr_reader :host
+
+    # @!attribute [ro] port
+    #   @return [Integer] the value of the attribute port
+    attr_reader :port
+
+    # Instantiate an object of type Odsee::LDAP to perform directory operations.
+    # This constructor takes a Hash containing arguments, all of which are
+    # either optional or may be specified later with other methods as described
+    # below. The following arguments are supported:
+    #
+    # @example ldap = Odsee::LDAP.new auth: {
+    #   method: :simple, username: 'ldapuser', password: 'secret'
+    # }
+    #
+    # @param opts [Hash{Symbol => Value}]
+    # @option opts [String] :host
+    #   the ldap host to connect to, default is `localhost`
+    # @option opts [Integer] :port
+    #   the ldap port to connect to, default is `389`
+    # @option opts [Hash] :auth
+    #   hash containing authorization parameters, supported values include
+    #   `:anonymous` and `:simple`, defautl is `:anonymous`, the password may be
+    #   a Proc that returns a string
+    # @option opts [String] :base
+    #   default treebase parameter for searches performed against the server
+    #
+    # @return [Odsee::LDAP]
+    #   authenticated Odsee::LDAP connection object
+    #
+    # @api public
+    def initialize(options = {})
+      @host = options.fetch(:host, 'localhost')
+      @port = options.fetch(:port, 389)
+      @auth = options.fetch(:auth, method: :anonymous)
+      @base = options.fetch(:base, nil)
+
+      @ldap ||= bind(@host, @port, @auth)
     end
 
-    # This method should not be used directly. It is used to bind to the
-    # directory server.
-    # The databag is the name of the databag that is used for looking up
-    # connection auth.
-    # It returns a connected ruby Net::LDAP object
+    # Bind to the LDAP directory server and returns a Odsee::LDAP connection
+    # object using the supplied authentication credentials
     #
-    def bind(host, port, auth, databag)
-      auth = auth.is_a?(Hash) ? auth.to_hash : auth.to_s
-
-      unless databag.is_a?(String) || databag.is_a?(Symbol)
-        fail "Invalid databag: #{databag}"
+    # @param [String] host
+    #   the ldap host to connect to, default is `localhost`
+    # @param [Integer] port
+    #   the ldap port to connect to, default is `389`
+    # @param [Hash] auth
+    #   hash containing authorization parameters, supported values include
+    #  `:anonymous` and `:simple`, defautl is `:anonymous`
+    #
+    # @return [Odsee::LDAP]
+    #   authenticated Odsee::LDAP connection object
+    #
+    # @raise [Odsee::Exceptions::LDAPBindError]
+    #
+    # @api public
+    def bind(host, port, auth)
+      ldap = Net::LDAP.new(host: host, port: port, auth: auth)
+      unless ldap.get_operation_result.message =~ /Success/i
+        fail LDAPBindError.new ldap.get_operation_result.message
       end
-
-      if auth.is_a?(String) && auth.length > 0
-        require 'chef/data_bag_item'
-        require 'chef/encrypted_data_bag_item'
-
-        secret = Chef::EncryptedDataBagItem.load_secret
-        auth = Chef::EncryptedDataBagItem.load(
-          databag.to_s, auth, secret
-        ).to_hash
-      end
-
-      unless auth.is_a?(Hash) && auth.key?('bind_dn') && auth.key?('password')
-        fail "Invalid auth: #{auth}"
-      end
-
-      @ldap = Net::LDAP.new host: host, port: port, auth: {
-        method: :simple, username: auth['bind_dn'], password: auth['password']
-      }
-
-      unless @ldap.get_operation_result.message == 'Success'
-        fail "Unable to bind: #{@ldap.get_operation_result.message}"
-      end
-      @ldap
+      ldap
     end
 
-    # This method is used to search the directory server. It accepts the
-    # connection resource object described above
-    # along with the basedn to be searched. Optionally it also accepts an LDAP
-    # filter and scope.
-    # The default filter is objectClass=* and the default scope is 'base'
-    # It returns a list of entries.
+    # Searches the LDAP directory for directory entries. `#search` against the
+    # directory, involves specifying a treebase, a set of search filters, and a
+    # list of attribute values. The filters specify ranges of possible values
+    # for particular attributes. Multiple filters can be joined together with
+    # AND, OR, and NOT operators. A server will respond to a `#search` by
+    # returning a list of matching DNs together with a set of attribute values
+    # for each entity, depending on what attributes the search requested
     #
-    def search(c, basedn, *constraints)
-      bind(c.host, c.port, c.auth, c.databag) unless @ldap
-      fail 'Must specify base dn for search' unless basedn
-      (filter, scope, attributes) = constraints
+    # @param [String] dn
+    #   specifying the tree-base for the search
+    # @param [String, Array] attributes
+    #   a string or array specifying the LDAP attributes to return
+    #
+    # @return [Array<Odsee::LDAP::Entry>]
+    #   a result set or nil if the requested `#search` fails with an error
+    #
+    # @api public
+    def search(dn = @base, *attributes)
+      (filter, scope, attrs) = attributes
       filter = filter.nil? ? Net::LDAP::Filter.eq('objectClass', '*') : filter
 
-      case scope
-      when 'base'
-        scope = Net::LDAP::SearchScope_BaseObject
-      when 'one'
-        scope = Net::LDAP::SearchScope_SingleLevel
+      scope = case
+      when scope == 'base'
+        Net::LDAP::SearchScope_BaseObject
+      when scope == 'one'
+        Net::LDAP::SearchScope_SingleLevel
       else
-        scope = Net::LDAP::SearchScope_WholeSubtree
+        Net::LDAP::SearchScope_WholeSubtree
       end
 
       scope = scope.nil? ? Net::LDAP::SearchScope_BaseObject : scope
-      attributes = attributes.nil? ? ['*'] : attributes
-
-      entries = @ldap.search(
-        base: basedn, filter: filter, scope: scope, attributes: attribute
-      )
-
-      unless @ldap.get_operation_result.message =~ /(Success|No Such Object)/
-        fail "Error while searching: #{@ldap.get_operation_result.message}"
-      end
-      entries
+      attrs = attrs.nil? ? ['*'] : attrs
+      @ldap.search(base: dn, filter: filter, scope: scope, attributes: attrs)
     end
 
     # This method accepts a connection resource object. It is intended to be
     # used with Odsee::Ldap::LdapEntry objects that will also have a .dn
     # method indicating Distinguished Name to be retrieved. It returns a single
-    # entry.
+    # entry
     #
-    def get_entry(c, dn)
-      bind(c.host, c.port, c.auth, c.databag) unless @ldap
+    # @param [String] dn
+    #   specifying the tree-base for the search
+    #
+    # @return [Array<Odsee::LDAP::Entry>]
+    #   a single result or nil if the requested `#search` fails with an error
+    #
+    # @api public
+    def entry(dn = @base)
       entry = @ldap.search(
         base:   dn,
         filter: Net::LDAP::Filter.eq('objectClass', '*'),
         scope:  Net::LDAP::SearchScope_BaseObject,
         attributes: ['*']
       )
-
-      unless @ldap.get_operation_result.message =~ /(Success|No Such Object)/
-        fail "Error while searching: #{@ldap.get_operation_result.message}"
-      end
       entry ? entry.first : entry
     end
 
-    # This method accepts a connection resource object, a distinguished name,
-    # and the attributes for the entry to be added.
+    # `#add` specifies a new dn and an initial set of attribute values. If the
+    # operation succeeds, a new entity with the corresponding dn and attributes
+    # is added to the directory
     #
-    def add_entry(c, dn, attrs)
-      bind(c.host, c.port, c.auth, c.databag) unless @ldap
-      attrs = CICPHash.new.merge(attrs)
+    # @param [String] dn
+    #   the full dn of the new entry
+    # @param [Hash] attributes
+    #   a hash of attributes of the new entry
+    #
+    # @return [undefined]
+    #
+    # @api public
+    def add(dn = @base, attributes)
       relativedn = dn.split(',').first
-      attrs.merge!(Hash[*relativedn.split('=').flatten])
-      @ldap.add dn: dn, attributes: attrs
-      unless @ldap.get_operation_result.message == 'Success'
-        fail "Unable to add record: #{@ldap.get_operation_result.message}"
-      end
+      attributes.merge!(Hash[*relativedn.split('=').flatten])
+      @ldap.add dn: dn, attributes: attributes
     end
 
-    # Accepts a connection resource object as the first argument, followed by an
-    # Array of ldap operations. It is intended to be used with
-    # Odsee::Ldap::LdapEntry objects that will also have a .dn method that
-    # returns the DN of the entry to be modified.
+    # `#modify` is used to change the attribute values stored in the directory
+    # for a particular entity. `#modify` may add or delete attributes (which
+    # are lists of values) or it change attributes by adding to or deleting
+    # from their values
     #
-    # Each ldap operation in the ldap operations list is an Array object with
-    # the following items:
-    #   1) LDAP operation (e.g. :add, :delete, :replace)
-    #   2) Attribute name (String or Symbol)
-    #   3) Attribute Values (String or Symbol, or Array of Strings or Symbols)
+    # @param [String] dn
+    #   the full DN of the entry whose attributes are to be modified
+    # @param [Array] operations
+    #   each of the operations appearing in the Array must itself be an Array
+    #   with exactly three elements; operator (must be `:add`, `:replace`, or
+    #   `:delete`), attribute name (string or symbol) to modify, value:
+    #   (string, symbol or an array of strings or symbols)
     #
-    # So an example of an operations list to be passed to this method might look
-    # like this:
-    # [[:add, 'attr1', 'value1'],
-    # [:replace, :attr2, [:attr2a, 'attr2b', :attr2c]],
-    # [:delete, 'attr3' ], [:delete, :attr4, 'value4']]
+    # @return [TrueClass, FalseClass]
+    #   indicating whether the operation succeeded or failed
     #
-    # Note that none of the values passed can be Integers. They must be STRINGS
-    # ONLY! This is a limitation of the ruby net-ldap library.
-    #
-    def modify_entry(c, dn, ops)
-      entry = get_entry(c, dn)
-      @ldap.modify dn: dn, operations: ops
-      unless @ldap.get_operation_result.message =~
-             /(Success|Attribute or Value Exists)/
-        fail "Unable to modify record: #{@ldap.get_operation_result.message}"
-      end
+    # @api public
+    def modify(dn = @base, operations)
+      @ldap.modify dn: dn, operations: operations
     end
 
-    # Expects a connection resource object, along with a .dn method that returns
-    # the Distinguished Name of the entry to be deleted.
+    # `#delete` specifies an entity db, if it succeeds, the entity and all its
+    # attributes are removed from the directory
     #
-    def delete_entry(c, dn)
-      bind(c.host, c.port, c.auth, c.databag) unless @ldap
+    # @param [String] dn
+    #   the full DN of the entry to be deleted
+    #
+    # @return [TrueClass, FalseClass]
+    #   indicating whether the operation succeeded or failed
+    #
+    # @api public
+    def delete(dn = @base)
       @ldap.delete dn: dn
-      unless @ldap.get_operation_result.message =~ /(Success|No Such Object)/
-        fail "Unable to remove record: #{@ldap.get_operation_result.message}"
-      end
     end
   end
 
@@ -243,6 +252,8 @@ module Odsee
     class InvalidRegistryType < RuntimeError; end
     class InvalidStateType < RuntimeError; end
     class ResourceNotFound < RuntimeError; end
+    class AuthenticationError < RuntimeError; end
+    class LDAPBindError < RuntimeError; end
 
     # A custom exception class for registry methods
     #
@@ -279,7 +290,7 @@ module Odsee
       # @param [String] file
       # @return [Odsee::Exceptions::FileNotFound]
       # @api private
-      def initialize(_path)
+      def initialize(file)
         super "No such file found `#{file}`"
       end
     end
@@ -302,7 +313,7 @@ module Odsee
   #
   unless Chef::Recipe.ancestors.include?(Odsee::Helpers)
     Chef::Recipe.send(:include,   Odsee::Helpers)
-    Odsee::Ldap.send(:include, Odsee::Helpers)
+    Chef::Resource.send(:include, Odsee::Helpers)
     Chef::Provider.send(:include, Odsee::Helpers)
   end
 end

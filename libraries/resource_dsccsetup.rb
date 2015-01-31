@@ -81,18 +81,6 @@ class Chef::Resource::Dsccsetup < Chef::Resource::LWRPBase
             kind_of: [String, Symbol],
             name_attribute: true
 
-  # A file containing the Direcctory Service Manager password.
-  #
-  # @param [String] admin_pw_file
-  #   File to use to store the Direcctory Service Manager password.
-  #
-  # @return [String]
-  #
-  # @api public
-  attribute :admin_pw_file,
-            kind_of: Proc,
-            default: lazy { __admin_pw__ }
-
   # Specifies the port for LDAP traffic. The default is 3998.
   #
   # @param [Integer] registry_ldap_port

@@ -44,7 +44,7 @@ class Chef::Resource::Dsadm < Chef::Resource::LWRPBase
   #
   # @return [Chef::Resource::Dsadm]
   # @api private
-  state_attrs :exists, :state, :info
+  state_attrs :created, :running
 
   # Sets the default action
   #
@@ -61,11 +61,21 @@ class Chef::Resource::Dsadm < Chef::Resource::LWRPBase
   # Boolean, returns true if the Directory Server instance has been created,
   # otherwise false
   #
-  # @note This is a state attribute `state_attrs` which the provider sets
+  # @note This is a state attribute or `state_attrs` set by the provider
   # @param [TrueClass, FalseClass]
   # @return [TrueClass, FalseClass]
   # @api private
   attribute :created,
+            kind_of: [TrueClass, FalseClass],
+            default: nil
+
+  # Boolean, true when the Directory Server instance is running
+  #
+  # @note This is a state attribute or `state_attrs` set by the provider
+  # @param [TrueClass, FalseClass]
+  # @return [TrueClass, FalseClass]
+  # @api private
+  attribute :running,
             kind_of: [TrueClass, FalseClass],
             default: nil
 
@@ -171,18 +181,6 @@ class Chef::Resource::Dsadm < Chef::Resource::LWRPBase
             kind_of: String,
             default: lazy { node[:odsee][:dn] }
 
-  # A file containing the Direcctory Service Manager password.
-  #
-  # @param [String] file
-  #   File to use to store the Direcctory Service Manager password.
-  #
-  # @return [String]
-  #
-  # @api public
-  attribute :admin_pw_file,
-            kind_of: Proc,
-            default: lazy { __admin_pw__ }
-
   # Starts Directory Server with the configuration used at the last
   # successful startup.
   #
@@ -193,7 +191,7 @@ class Chef::Resource::Dsadm < Chef::Resource::LWRPBase
   # @api public
   attribute :safe_mode,
             kind_of: [TrueClass, FalseClass],
-            default: lazy { node[:odsee][:safe_mode] }
+            default: nil
 
   # Ensures manually modified schema is replicated to consumers.
   #
@@ -204,19 +202,7 @@ class Chef::Resource::Dsadm < Chef::Resource::LWRPBase
   # @api public
   attribute :schema_push,
             kind_of: [TrueClass, FalseClass],
-            default: lazy { node[:odsee][:schema_push] }
-
-  # A file containing the certificate database password.
-  #
-  # @param [String] cert_pw_file
-  #   File to use to store the certificate database password.
-  #
-  # @return [String]
-  #
-  # @api public
-  attribute :cert_pw_file,
-            kind_of: Proc,
-            default: lazy { __cert_pw__ }
+            default: nil
 
   # If the instance should be forcibly shut down. When used with
   # `stop-running-instances`, the command forcibly shuts down all the running
@@ -231,5 +217,5 @@ class Chef::Resource::Dsadm < Chef::Resource::LWRPBase
   # @api public
   attribute :force,
             kind_of: [TrueClass, FalseClass],
-            default: lazy { node[:odsee][:force] }
+            default: nil
 end

@@ -40,9 +40,7 @@ monitor.synchronize do
 end
 
 # This is an example of how you can use the providers in this cookbook to create
-# a LDAP directory tree. There are many advantages to using Chef providers over
-# scripts ensuring that you have a reproducable envirment ....but if you are
-# not comfortable with Ruby I don't not suggest you make any modifications
+# a LDAP directory tree.
 
 dsccsetup :ads_create do
   action :ads_create
@@ -60,22 +58,17 @@ dsccagent node[:odsee][:agent_path].call do
   action :start
 end
 
-dsadm '/opt/dsInst' do
+dsadm node[:odsee][:instance_path] do
   action [:create, :start]
 end
 
-# dsconf 'dc=example,dc=com' do
-#   ldif_file ::File.join(node[:odsee][:install_dir],
-#     'dsee7/resources/ldif/Example.ldif')
-#   action [:create_suffix, :import]
-# end
-#
-# dsccreg '/opt/dsInst' do
-#   action :add_server
-# end
+dsconf node[:odsee][:suffix] do
+  path node[:odsee][:instance_path]
+  ldif_file ::File.join(node[:odsee][:install_dir],
+                        'dsee7/resources/ldif/Example.ldif')
+  action [:create_suffix, :import]
+end
 
-ruby_block :woot do
-  block do
-    h1; banner 'w000t!!!'; h2
-  end
+dsccreg node[:odsee][:instance_path] do
+  action :add_server
 end

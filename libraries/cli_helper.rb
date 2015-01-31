@@ -24,24 +24,21 @@ module Odsee
   # Instance methods that are added when you include Odsee::CliHelpers
   #
   module CliHelpers
-    # Search a text file for a matching string,
+    # Returns a hash using col1 as keys and col2 as values.
     #
-    # @param [String] file
-    #   The file to search for the given string
-    # @param [String] content
-    #   String to search for in the given file
+    # @example zip_hash([:name, :age, :sex], ['Earl', 30, 'male'])
+    #   => { :age => 30, :name => "Earl", :sex => "male" }
     #
-    # @return [TrueClass, FalseClass]
-    #   True if match was found, false if file does not exist or does not
-    #   contain a match
+    # @param [Array] col1
+    #   Containing the keys.
+    # @param [Array] col2
+    #   Values for hash.
+    #
+    # @return [Hash]
     #
     # @api public
-    def file_search(file, content)
-      return false unless ::File.exist?(file)
-      ::File.open(file, &:readlines).map! do |line|
-        return true if line.match(content)
-      end
-      false
+    def zip_hash(col1, col2)
+      col1.zip(col2).inject({}) { |r, i| r[i[0]] = i[1]; r }
     end
 
     # Finds a command in $PATH
@@ -53,7 +50,7 @@ module Odsee
     # @api public
     def which(cmd)
       if Pathname.new(cmd).absolute?
-        File.executable?(cmd) ? cmd : nil
+        ::File.executable?(cmd) ? cmd : nil
       else
         paths = %w(/bin /usr/bin /sbin /usr/sbin)
         paths << ::File.join(node[:odsee][:install_dir], 'dsee7/bin')
@@ -66,18 +63,6 @@ module Odsee
         nil
       end
     end
-
-    # def args_to_s(args = {})
-    #   args_str = ''
-    #   args.each { |k,v|
-    #     next if v.nil?
-    #     key = "--#{k.to_s.shellescape}" if [String,Symbol].include? k.class
-    #     arg = v.to_s.shellescape unless v === ''
-    #     equal = '=' if key && arg
-    #     args_str +=" #{key}#{equal}#{arg}"
-    #   }
-    #   args_str
-    # end
 
     # Return the full path to the command
     #
@@ -115,17 +100,75 @@ module Odsee
       define_method(cmd) do |*args|
         subcmd = Hoodie::Inflections.dasherize(args.shift.to_s)
         (run ||= []) << which(cmd.to_s) << subcmd.to_s << args
-        banner '--->>>-o-o-o-o-o-o-o-o->>  <<-o-o-o-o-o-o-o-o-<<<---'
-        banner "#{run.flatten.join(' ')}", :yellow
-        banner '<<-o-o-o-o-o-o-o-o-<<<---  --->>>-o-o-o-o-o-o-o-o->>'
         retrier(on: Errno::ENOENT, sleep: ->(n) { 4**n }) do
           Chef::Log.info shell_out!(run.flatten.join(' ')).stdout
         end
       end
     end
 
+    # Boolean, true if the stat is running, false otherwise
+    #
+    # @return [TrueClass, FalseClass]
+    #
+    # @api private
+    def running?
+      info[:state] =~ /^running$/ ? true : false
+    end
+    alias_method :enabled?, :running?
+
+    # Boolean, true if the instance has been created, false otherwise
+    #
+    # @return [TrueClass, FalseClass]
+    #
+    # @api private
+    def created?
+      info[:instance_path] == dscc_path
+    end
+
+    # Boolean to check if the suffix entry has been created LDAP DIT
+    #
+    # @return [TrueClass, FalseClass]
+    #   True if the suffix entry has been created, otherwise false.
+    #
+    # @api public
+    def suffix_created?
+      @new_resource.admin_passwd.transient do |passwd_file|
+        info = info("-ic -w #{passwd_file}")
+        info.key?(:suffixes) && info[:suffixes] == new_resource.suffix
+      end
+    end
+
+    # Boolean to check if the suffix has been populated with entries
+    #
+    # @return [TrueClass, FalseClass]
+    #   True if the suffix has been populated, otherwise false.
+    #
+    # @api public
+    def empty_suffix?
+      @new_resource.admin_passwd.transient do |passwd_file|
+        info = info("-ic -w #{passwd_file}")
+        info[:total_entries].to_i < 2
+      end
+    end
+
+    # Boolean to check if the DSCC Registry has been created
+    #
+    # @return [TrueClass, FalseClass]
+    #   True if the DSCC Registry instance has been created, otherwise false.
+    #
+    # @api public
+    def ads_created?
+      cmd = "#{__dsccsetup__} status"
+      shell_out!(cmd).stdout.include?('DSCC Registry has been created')
+    rescue
+      false
+    end
+
     # Displays information about server configuration such as port number,
     # suffix name, server mode and task states.
+    #
+    # @param [String] auth
+    #   if a password is required for #info pass in the flag and password file
     #
     # @example info
     #   => { :bit_format       => "64-bit",
@@ -140,27 +183,17 @@ module Odsee
     #
     # @return [Hash]
     #
-    def info
+    # @api public
+    def info(auth = nil)
       resource = "__#{@current_resource.resource_name}__"
-      cmd = "#{send(resource)} info"
-      @info ||= {}
+      cmd = "#{send(resource)} info #{info_opts} #{auth} #{dscc_path}"
+      info ||= {}
       shell_out!(cmd, returns: [0, 125, 154]).stdout.split("\n").each do |line|
         next unless line.include?(':')
         key, value = line.to_s.split(':')
-        @info[key.strip.gsub(/(\s|-)/, '_').downcase.to_sym] = value.strip
+        info[key.strip.gsub(/(\s|-)/, '_').downcase.to_sym] = value.strip
       end
-      @info
-    end
-
-    # @api private
-    def running?
-      info[:state] =~ /^running$/ ? true : false
-    end
-    alias_method :enabled?, :running?
-
-    # @api private
-    def created?
-      info[:instance_path] == @new_resource.path
+      info
     end
 
     # Returns a hash of the DSCC registroy entries for a server or agent
@@ -173,18 +206,15 @@ module Odsee
     #
     # @api public
     def registry(instance)
-      __t__ ||= secure_tmp_file
-      __t__.content(node[:odsee][:admin_password])
-      __t__.run_action(:create)
-      cmd = "#{__dsccreg__} list-#{instance} -w #{__t__.path}"
+      @new_resource.admin_passwd.transient do |passwd_file|
+        cmd = "#{__dsccreg__} list-#{instance} -w #{passwd_file}"
+      end
       lines = retrier(on: Errno::ENOENT, sleep: ->(n) { 4**n }) do
         shell_out!(cmd).stdout.split("\n").reverse
       end
       keys = lines.pop.split(' ').map { |line| line.downcase.to_sym }
       lines.delete_if { |l| l =~ /^--|(instance|agent)\(s\)\s(found|display)/ }
       lines.map { |line| zip_hash(keys, line.split(' ')) }[0]
-    ensure
-      ::File.unlink(__t__.path) if ::File.exist?(__t__.path)
     end
 
     # Boolean, true if the specified instance type has been added to DSCC
@@ -210,58 +240,6 @@ module Odsee
       end
     end
 
-    # Returns a hash using col1 as keys and col2 as values.
-    #
-    # @example zip_hash([:name, :age, :sex], ['Earl', 30, 'male'])
-    #   => { :age => 30, :name => "Earl", :sex => "male" }
-    #
-    # @param [Array] col1
-    #   Containing the keys.
-    # @param [Array] col2
-    #   Values for hash.
-    #
-    # @return [Hash]
-    #
-    # @api public
-    def zip_hash(col1, col2)
-      col1.zip(col2).inject({}) { |r, i| r[i[0]] = i[1]; r }
-    end
-
-    # Boolean to check if the suffix entry has been created LDAP DIT
-    #
-    # @return [TrueClass, FalseClass]
-    #   True if the suffix entry has been created, otherwise false.
-    #
-    # @api public
-    def suffix_created?
-      @info.key?('Suffixes') && @info['Suffixes'] == new_resource.suffix
-    rescue
-      false
-    end
-
-    # Boolean to check if the suffix has been populated with entries
-    #
-    # @return [TrueClass, FalseClass]
-    #   True if the suffix has been populated, otherwise false.
-    #
-    # @api public
-    def empty_suffix?
-      @info['Total entries'].to_i < 2
-    end
-
-    # Boolean to check if the DSCC Registry has been created
-    #
-    # @return [TrueClass, FalseClass]
-    #   True if the DSCC Registry instance has been created, otherwise false.
-    #
-    # @api public
-    def ads_created?
-      cmd = "#{__dsccsetup__} status"
-      shell_out!(cmd).stdout.include?('DSCC Registry has been created')
-    rescue
-      false
-    end
-
     # Runs a code block, and retries it when an exception occurs. Should the
     # number of retries be reached without success, the last exception will be
     # raised.
@@ -282,6 +260,7 @@ module Odsee
     #
     # @return [Block]
     #
+    # @api public
     def retrier(options = {}, &_block)
       tries  = options.fetch(:tries, 4)
       wait   = options.fetch(:sleep, 1)
@@ -313,5 +292,26 @@ module Odsee
     end
 
     private #   P R O P R I E T À   P R I V A T A   Vietato L'accesso
+
+    # Return a path to an agent or instance regardless of type
+    # @return [String]
+    # @api private
+    def dscc_path
+      if @new_resource.instance_variable_defined?(:@path)
+        @new_resource.path
+      else
+        @new_resource.instance_path
+      end
+    end
+
+    # Add any additional options to the info block, assigned with the IVAR
+    # `@info_opts` in the respective providers
+    # @return [String]
+    # @api private
+    def info_opts
+      if @new_resource.instance_variable_defined?(:@info_opts)
+        @new_resource.info_opts
+      end
+    end
   end
 end

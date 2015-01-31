@@ -20,6 +20,8 @@
 # limitations under the License.
 #
 
+require_relative 'secrets'
+
 # Include hooks to extend with class and instance methods.
 #
 module Odsee
@@ -94,7 +96,7 @@ module Odsee
       def validate_host(host)
         IPSocket.getaddress(host)
       rescue
-        raise InvalidHost.new host
+        fail InvalidHost.new host
       end
 
       # Helper method to validate file
@@ -141,31 +143,43 @@ module Odsee
       end
     end
 
-    # @return [Chef::Resource::File] __admin_pw__
+    # A file containing the Direcctory Service Manager password.
+    #
+    # @param [String] admin_pw_file
+    #   File to use to store the Direcctory Service Manager password.
+    #
+    # @return [Odsee::Secrets]
+    #
     # @api private
-    def __admin_pw__
-      @admin_pw ||= secure_tmp_file
-      @admin_pw.content(node[:odsee][:admin_password])
-      @admin_pw.run_action(:create)
-      @admin_pw.path
+    def admin_passwd
+      set_or_return :admin_passwd,
+      Odsee::Secrets.new(node[:odsee][:admin_password], run_context).freeze
     end
 
-    # @return [Chef::Resource::File] __agent_pw__
+    # A file containing the DSCC agent password.
+    #
+    # @param [String] agent_pw_file
+    #   File to use to store the DSCC agent password.
+    #
+    # @return [Odsee::Secrets]
+    #
     # @api private
-    def __agent_pw__
-      @agent_pw ||= secure_tmp_file
-      @agent_pw.content(node[:odsee][:agent_password])
-      @agent_pw.run_action(:create)
-      @agent_pw.path
+    def agent_passwd
+      set_or_return :agent_passwd,
+      Odsee::Secrets.new(node[:odsee][:agent_password], run_context).freeze
     end
 
-    # @return [Chef::Resource::File] __cert_pw__
+    # A file containing the certificate database password.
+    #
+    # @param [String] cert_pw_file
+    #   File to use to store the certificate database password.
+    #
+    # @return [Odsee::Secrets]
+    #
     # @api private
-    def __cert_pw__
-      @cert_pw ||= secure_tmp_file
-      @cert_pw.content(node[:odsee][:cert_password])
-      @cert_pw.run_action(:create)
-      @cert_pw.path
+    def cert_passwd
+      set_or_return :cert_passwd,
+      Odsee::Secrets.new(node[:odsee][:cert_password], run_context).freeze
     end
   end
 

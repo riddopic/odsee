@@ -99,14 +99,15 @@ class Chef::Provider::Dsccsetup < Chef::Provider::LWRPBase
   #
   # @api private
   def action_ads_create
-    banner '｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡' \
-           '｡｡｡｡｡｡'.yellow
+    binding.pry
+
     if @current_resource.created
       Chef::Log.info "#{new_resource} already exists - nothing to do"
     else
       converge_by "Initialize DSCC registry for #{new_resource}" do
         begin
           lock.enter
+          do_prerequisite
           dsccsetup :ads_create,
                     new_resource._?(:admin_pw_file,       '-w'),
                     new_resource._?(:registry_ldap_port,  '-p'),
@@ -124,8 +125,6 @@ class Chef::Provider::Dsccsetup < Chef::Provider::LWRPBase
     end
     load_new_resource_state
     @new_resource.created(true)
-    banner '｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡' \
-           '｡｡｡｡｡｡'.yellow
   end
 
   # Delete the Directory Server instance used by DSCC to store configuration

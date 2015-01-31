@@ -61,7 +61,7 @@ class Chef::Resource::Dsccagent < Chef::Resource::LWRPBase
 
   # Boolean, true if a DSCC agent instance has been created, otherwise false
   #
-  # @note This is a state attribute `state_attrs` which the provider sets
+  # @note This is a state attribute or `state_attrs` set by the provider
   # @param [TrueClass, FalseClass]
   # @return [TrueClass, FalseClass]
   # @api private
@@ -72,7 +72,7 @@ class Chef::Resource::Dsccagent < Chef::Resource::LWRPBase
   # Boolean, true if a DSCC agent instance has been configured as a SNMP agent,
   # otherwise false
   #
-  # @note This is a state attribute `state_attrs` which the provider sets
+  # @note This is a state attribute or `state_attrs` set by the provider
   # @param [TrueClass, FalseClass]
   # @return [TrueClass, FalseClass]
   # @api private
@@ -84,7 +84,7 @@ class Chef::Resource::Dsccagent < Chef::Resource::LWRPBase
   # be able to start if it was registered in the DSCC registry, or if the SNMP
   # agent is enabled
   #
-  # @note This is a state attribute `state_attrs` which the provider sets
+  # @note This is a state attribute or `state_attrs` set by the provider
   # @param [TrueClass, FalseClass]
   # @return [TrueClass, FalseClass]
   # @api private
@@ -118,18 +118,6 @@ class Chef::Resource::Dsccagent < Chef::Resource::LWRPBase
   attribute :agent_port,
             kind_of: String,
             default: lazy { node[:odsee][:agent_port] }
-
-  # A file containing the DSCC agent password.
-  #
-  # @param [String] agent_pw_file
-  #   File to use to store the DSCC agent password.
-  #
-  # @return [String]
-  #
-  # @api public
-  attribute :agent_pw_file,
-            kind_of: Proc,
-            default: lazy { __agent_pw__ }
 
   # Full path to the existing DSCC agent instance. The default path is to use:
   # install-path/var/dcc/agent
@@ -181,15 +169,4 @@ class Chef::Resource::Dsccagent < Chef::Resource::LWRPBase
             kind_of: Integer,
             default: lazy { node[:odsee][:ds_port] }
 
-  # A file containing the Direcctory Service Manager password.
-  #
-  # @param [String] admin_pw_file
-  #   File to use to store the Direcctory Service Manager password.
-  #
-  # @return [String]
-  #
-  # @api public
-  attribute :admin_pw_file,
-            kind_of: Proc,
-            default: lazy { __admin_pw__ }
 end

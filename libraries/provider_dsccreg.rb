@@ -1,6 +1,6 @@
 # encoding: UTF-8
 #
-# Cookbook Name:: garcon
+# Cookbook Name:: odsee
 # HWRP:: dsccreg
 #
 # Author: Stefano Harding <riddopic@gmail.com>
@@ -87,8 +87,6 @@ class Chef::Provider::Dsccreg < Chef::Provider::LWRPBase
   #
   # @api private
   def action_add_agent
-    banner '｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡' \
-           '｡｡｡｡｡｡'.blue
     if @current_resource.agents
       Chef::Log.info "#{new_resource} already created - nothing to do"
     else
@@ -113,9 +111,6 @@ class Chef::Provider::Dsccreg < Chef::Provider::LWRPBase
     end
     load_new_resource_state
     @current_resource.agents(check_for(:agents, @new_resource.path))
-
-    banner '｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡｡' \
-           '｡｡｡｡｡｡'.blue
   end
 
   # Remove a DSCC agent instance from the DSCC registry.
@@ -174,12 +169,14 @@ class Chef::Provider::Dsccreg < Chef::Provider::LWRPBase
     else
       converge_by "Adding server instance #{new_resource} to the registry" do
         begin
-          dsccreg :add_agent,
-                  new_resource._?(:dn,                   '-B'),
-                  new_resource._?(:admin_pw_file,        '-G'),
-                  new_resource._?(:description,          '-d'),
-                  new_resource._?(:hostname,             '-H'),
-                  new_resource._?(:agent_port, '--agent-port'),
+          dsccreg :add_server,
+                  # new_resource._?(:dn,                   '-B'),
+                  new_resource._?(:admin_pw_file,        '-w'),
+                  new_resource._?(:agent_pw_file,        '-G'),
+                  # new_resource._?(:description,          '-d'),
+                  # new_resource._?(:hostname,             '-H'),
+                  # new_resource._?(:agent_port, '--agent-port'),
+                  new_resource._?(:no_inter,             '-i'),
                   new_resource.path
           Chef::Log.info 'Server instance added to the DSCC registry'
         ensure
