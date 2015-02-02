@@ -27,7 +27,7 @@ single_include 'odsee::default'
 
 # Generate passwords if none are provided, passwords are saved in the node
 # attributes, at the moment unencrypted although encrypting them does not
-# provide any level of protection becasue the machine must always be able to
+# provide any level of protection because the machine must always be able to
 # decrypt the keys when required.
 #
 # There are different passwords for various components, they could all be set
@@ -35,9 +35,9 @@ single_include 'odsee::default'
 #
 require 'securerandom' unless defined?(SecureRandom)
 monitor.synchronize do
-  node.set_unless[:odsee][:admin_password] = pwd_hash(SecureRandom.hex)[0..12]
-  node.set_unless[:odsee][:agent_password] = pwd_hash(SecureRandom.hex)[0..12]
-  node.set_unless[:odsee][:cert_password]  = pwd_hash(SecureRandom.hex)[0..12]
+  node.set_unless[:odsee][:admin_passwd] = pwd_hash(SecureRandom.hex)[0..12]
+  node.set_unless[:odsee][:agent_passwd] = pwd_hash(SecureRandom.hex)[0..12]
+  node.set_unless[:odsee][:cert_passwd]  = pwd_hash(SecureRandom.hex)[0..12]
   node.save unless Chef::Config[:solo]
 end
 
@@ -45,7 +45,11 @@ end
 # a LDAP directory tree. We create the dc=example,dc=com suffix and use the
 # supplied Example.ldif file to populate the directory.
 
-dsccsetup :ads_create do
+base_ldif = ::File.join(
+  node[:odsee][:install_dir], 'dsee7/resources/ldif/Example.ldif'
+)
+
+dsccsetup :create do
   action :ads_create
 end
 
@@ -67,8 +71,7 @@ end
 
 dsconf node[:odsee][:suffix] do
   path node[:odsee][:instance_path]
-  ldif_file ::File.join(node[:odsee][:install_dir],
-                        'dsee7/resources/ldif/Example.ldif')
+  ldif_file base_ldif
   action [:create_suffix, :import]
 end
 

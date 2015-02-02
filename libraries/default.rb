@@ -20,6 +20,7 @@
 # limitations under the License.
 #
 
+require_relative 'ldap'
 require_relative 'secrets'
 
 # Include hooks to extend with class and instance methods.

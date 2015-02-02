@@ -30,19 +30,19 @@ default[:odsee][:source] = {
 default[:odsee][:install_dir] = '/opt'
 
 # Password assigned to the Directory Service Manager, if none is provided one
-# will be randomly generate and assigned to the `node[:odsee][:admin_password]`
+# will be randomly generate and assigned to the `node[:odsee][:admin_passwd]`
 # attribute (default: randomly generate password).
-default[:odsee][:admin_password] = nil
+default[:odsee][:admin_passwd] = nil
 
 # Password assigned to the Directory Service Agent, if none is provided one
-# will be randomly generate and assigned to the `node[:odsee][:agent_password]`
+# will be randomly generate and assigned to the `node[:odsee][:agent_passwd]`
 # attribute (default: randomly generate password).
-default[:odsee][:agent_password] = nil
+default[:odsee][:agent_passwd] = nil
 
 # Password assigned to the certificate database, if none is provided one will
-# be randomly generate and assigned to the `node[:odsee][:cert_password]`
+# be randomly generate and assigned to the `node[:odsee][:cert_passwd]`
 # attribute (default: randomly generate password).
-default[:odsee][:cert_password] = nil
+default[:odsee][:cert_passwd] = nil
 
 # Uses PORT for the LDAP port, the default is 398.
 default[:odsee][:ldap_port] = 389
@@ -54,7 +54,7 @@ default[:odsee][:ldaps_port] = 636
 default[:odsee][:ds_port] = 3995
 
 # The PORT number for SNMP, the default is port 3996.
-default[:odsee][:ds_port] = 3996
+default[:odsee][:snmp_port] = 3996
 
 # Uses PORT for the agent port for the DSCC instance (default is 3997).
 default[:odsee][:agent_port] = 3997
@@ -75,19 +75,15 @@ default[:odsee][:suffix] = "'dc=example,dc=com'"
 # non-trusted server certificates
 default[:odsee][:accept_cert] = true
 
-# # Does not ask for confirmation before rejecting non-trusted server
-# # certificates.
-# default[:odsee][:reject_cert] = true
-
 # Does not prompt for confirmation before performing the operation.
 default[:odsee][:no_inter] = true
 
-# Sets the server instance owner's group ID. The default is the user's current
-# UNIX group.
-default[:odsee][:dsadm][:user_name] = 'root'
-
 # Sets the server instance owner user ID. The default is the current UNIX user
 # name.
+default[:odsee][:dsadm][:user_name] = 'root'
+
+# Sets the server instance owner's group ID. The default is the user's current
+# UNIX group.
 default[:odsee][:dsadm][:group_name] = 'root'
 
 # Boolean, true if SNMP version 3 should be used, otherwise false.

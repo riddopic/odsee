@@ -217,10 +217,9 @@ class Chef::Provider::Dsconf < Chef::Provider::LWRPBase
   #     Performs restore by moving files in place of copying them.
   # Rewrite flags:
   #   @option opts [TrueClass, FalseClass] `purge-csn`
-  #     Purge the Change Sequence Number (CSN). The purge-csn flag is set to off
-  #     by default. Setting purge-csn to on prevents old CSN data from being
-  #     kept by the operation. This reduces the size of entries by removing
-  #     traces of previous updates.
+  #     Purge the Change Sequence Number (CSN). `false` by default, setting
+  #     `true` prevents old CSN data from being kept by the operation. This
+  #     reduces the size of entries by removing traces of previous updates.
   #   @option opts [TrueClass, FalseClass] `convert-pwp-opattr-to-DS6`
   #     Converts DS5 mode password policy operational attributes into D6-mode.
   #     The convert-pwp-opattr-to-DS6 flag is set to off by default. When a

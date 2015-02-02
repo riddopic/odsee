@@ -26,7 +26,7 @@ module Odsee
   class LDAP
     # @!attribute [rw] ldap
     #   @return [Odsee::LDAP] authenticated Odsee::LDAP connection object
-    attr_accessor :ldap
+    # attr_accessor :ldap
 
     # @!attribute [ro] base
     #   @return [String] the value of the attribute base
@@ -71,8 +71,28 @@ module Odsee
       @auth = options.fetch(:auth, method: :anonymous)
       @base = options.fetch(:base, nil)
 
-      @ldap ||= bind(@host, @port, @auth)
+      @ldap = Net::LDAP.new(host: @host, port: @port, auth: @auth)
+      unless ldap.get_operation_result.message =~ /Success/i
+        fail LDAPBindError.new ldap.get_operation_result.message
+      end
     end
+
+
+    def find(id)
+      filter = Net::LDAP::Filter.eq("cn", "user1")
+      treebase = "dc=nodomain"
+
+      ldap.search(:base => treebase, :filter => filter) do |entry|
+          puts "DN: #{entry.dn} is part of the following groups:"
+          check = Net::LDAP::Filter.eq("member", entry.dn)
+          groups = ldap.search(:base => treebase, :filter => check)
+          groups.each do |group|
+              puts "#{group.cn}"
+          end
+      end
+    end
+
+
 
     # Bind to the LDAP directory server and returns a Odsee::LDAP connection
     # object using the supplied authentication credentials
