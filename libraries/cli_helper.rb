@@ -122,10 +122,10 @@ module Odsee
     def suffix_created?
       @new_resource.admin_passwd.tmp do |passwd_file|
         info = info("-ic -w #{passwd_file}")
-        info.key?(:suffixes) && info[:suffixes] == new_resource.suffix
+        info.key?(:suffixes) && info[:suffixes] == @new_resource.suffix[1..-2]
       end
     end
-
+    
     # Boolean to check if the suffix has been populated with entries
     #
     # @return [TrueClass, FalseClass]
