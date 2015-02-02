@@ -3,9 +3,9 @@
 # Cookbook Name:: odsee
 # HWRP:: dsadm
 #
-# Author: Stefano Harding <riddopic@gmail.com>
-#
-# Copyright (C) 2014-2015 Stefano Harding
+# Author:    Stefano Harding <riddopic@gmail.com>
+# License:   Apache License, Version 2.0
+# Copyright: (C) 2014-2015 Stefano Harding
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -98,8 +98,8 @@ class Chef::Provider::Dsadm < Chef::Provider::LWRPBase
   #   user.
   # @param [String] dn
   #   Defines the Directory Manager DN. The default is cn=Directory Manager.
-  # @param [String] admin_pw_file
-  #   Uses `password` from `admin_pw_file` file to access agent configuration.
+  # @param [String] admin_passwd
+  #   Uses `password` from `admin_passwd` file to access agent configuration.
   # @param [String] instance_path
   #   Full path to the Directory Server instance.
   #
@@ -111,25 +111,19 @@ class Chef::Provider::Dsadm < Chef::Provider::LWRPBase
       Chef::Log.info "#{new_resource} already created - nothing to do"
     else
       converge_by 'Creating a Directory Server instance' do
-        begin
+        new_resource.admin_passwd.tmp do |admin_file|
           dsadm :create,
-                new_resource._?(:below,         '-B'),
-                new_resource._?(:no_inter,      '-i'),
-                new_resource._?(:user_name,     '-u'),
-                new_resource._?(:group_name,    '-g'),
-                new_resource._?(:hostname,      '-h'),
-                new_resource._?(:ldap_port,     '-p'),
-                new_resource._?(:ldaps_port,    '-P'),
-                new_resource._?(:dn,            '-D'),
-                new_resource._?(:admin_pw_file, '-w'),
+                new_resource._?(:below,        '-B'),
+                new_resource._?(:no_inter,     '-i'),
+                new_resource._?(:user_name,    '-u'),
+                new_resource._?(:group_name,   '-g'),
+                new_resource._?(:hostname,     '-h'),
+                new_resource._?(:ldap_port,    '-p'),
+                new_resource._?(:ldaps_port,   '-P'),
+                new_resource._?(:dn,           '-D'),
+                new_resource._?(:admin_passwd, '-w'),
                 new_resource.instance_path
           Chef::Log.info 'DSCC Directory Server instance initialized'
-        ensure
-          %w(new_resource.admin_pw_file.split.last
-             new_resource.agent_pw_file.split.last
-             new_resource.cert_pw_file.split.last).each do |__pfile__|
-            ::File.unlink(__pfile__) if ::File.exist?(__pfile__)
-          end
         end
         new_resource.updated_by_last_action(true)
       end
@@ -169,8 +163,8 @@ class Chef::Provider::Dsadm < Chef::Provider::LWRPBase
   #   Does not prompt for password
   # @param [TrueClass, FalseClass] schema_push
   #   Ensures manually modified schema is replicated to consumers
-  # @param [String] cert_pw_file
-  #   Reads certificate database password from `cert_pw_file`
+  # @param [String] cert_passwd
+  #   Reads certificate database password from `cert_passwd`
   # @param [String] instance_path
   #   Full path to the Directory Server instance
   #
@@ -182,13 +176,15 @@ class Chef::Provider::Dsadm < Chef::Provider::LWRPBase
       Chef::Log.info "#{new_resource} already enabled - nothing to do"
     else
       converge_by "Start the Directory Server instance for #{new_resource}" do
-        dsadm :start,
-              new_resource._?(:safe_mode,              '-E'),
-              new_resource._?(:no_inter,               '-i'),
-              new_resource._?(:schema_push, '--schema-push'),
-              # new_resource._?(:cert_pw_file,         '-W'),
-              new_resource.instance_path
-        Chef::Log.info "Directory Server instance started for #{new_resource}"
+        new_resource.cert_passwd.tmp do |cert_file|
+          dsadm :start,
+                new_resource._?(:safe_mode,              '-E'),
+                new_resource._?(:no_inter,               '-i'),
+                new_resource._?(:schema_push, '--schema-push'),
+                # new_resource._?(:cert_passwd,          '-W'),
+                new_resource.instance_path
+          Chef::Log.info "Directory Server instance started for #{new_resource}"
+        end
       end
       new_resource.updated_by_last_action(true)
     end

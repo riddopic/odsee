@@ -3,9 +3,9 @@
 # Cookbook Name:: odsee
 # HWRP:: dsccreg
 #
-# Author: Stefano Harding <riddopic@gmail.com>
-#
-# Copyright (C) 2014-2015 Stefano Harding
+# Author:    Stefano Harding <riddopic@gmail.com>
+# License:   Apache License, Version 2.0
+# Copyright: (C) 2014-2015 Stefano Harding
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -77,8 +77,8 @@ class Chef::Provider::Dsccreg < Chef::Provider::LWRPBase
   #   Used to provide an optional description for the agent instance.
   # @param [String, Integer] hostname
   #   The DSCC registry host name or IP address.
-  # @param [String] agent_pw_file
-  #   Uses `password` from `agent_pw_file` file to access agent configuration.
+  # @param [String] agent_passwd
+  #   Uses `password` from `agent_passwd` file to access agent configuration.
   # @param [String] path
   #   Full path to the existing DSCC agent instance. The default path is to use:
   #   `install-path/var/dcc/agent`.
@@ -91,19 +91,15 @@ class Chef::Provider::Dsccreg < Chef::Provider::LWRPBase
       Chef::Log.info "#{new_resource} already created - nothing to do"
     else
       converge_by "Adding #{new_resource} instance to the DSCC registry" do
-        begin
-          dsccreg :add_agent,
-                  new_resource._?(:description,   '-d'),
-                  new_resource._?(:hostname,      '-H'),
-                  new_resource._?(:agent_pw_file, '-G'),
-                  new_resource._?(:admin_pw_file, '-w'),
-                  new_resource.path
-          Chef::Log.info 'DSCC agent instance added to the DSCC registry'
-        ensure
-          %w(new_resource.admin_pw_file.split.last
-             new_resource.agent_pw_file.split.last
-             new_resource.cert_pw_file.split.last).each do |__pfile__|
-            ::File.unlink(__pfile__) if ::File.exist?(__pfile__)
+        new_resource.admin_passwd.tmp do |admin_file|
+          new_resource.agent_passwd.tmp do |agent_file|
+            dsccreg :add_agent,
+                    new_resource._?(:description,  '-d'),
+                    new_resource._?(:hostname,     '-H'),
+                    new_resource._?(:agent_passwd, '-G'),
+                    new_resource._?(:admin_passwd, '-w'),
+                    new_resource.path
+            Chef::Log.info 'DSCC agent instance added to the DSCC registry'
           end
         end
         new_resource.updated_by_last_action(true)
@@ -148,8 +144,8 @@ class Chef::Provider::Dsccreg < Chef::Provider::LWRPBase
   # @param [String] dn
   #   Use the specified bind DN to bind to the instance specified by
   #   instance-path. By default, the dsccreg command uses cn=Directory Manager.
-  # @param [String] admin_pw_file
-  #   Uses `password` from `admin_pw_file` file to access agent configuration.
+  # @param [String] admin_passwd
+  #   Uses `password` from `admin_passwd` file to access agent configuration.
   # @param [String] description
   #   Used to provide an optional description for the agent instance.
   # @param [String, Integer] hostname
@@ -168,22 +164,14 @@ class Chef::Provider::Dsccreg < Chef::Provider::LWRPBase
       Chef::Log.info "#{new_resource} already created - nothing to do"
     else
       converge_by "Adding server instance #{new_resource} to the registry" do
-        begin
-          dsccreg :add_server,
-                  # new_resource._?(:dn,                   '-B'),
-                  new_resource._?(:admin_pw_file,        '-w'),
-                  new_resource._?(:agent_pw_file,        '-G'),
-                  # new_resource._?(:description,          '-d'),
-                  # new_resource._?(:hostname,             '-H'),
-                  # new_resource._?(:agent_port, '--agent-port'),
-                  new_resource._?(:no_inter,             '-i'),
-                  new_resource.path
-          Chef::Log.info 'Server instance added to the DSCC registry'
-        ensure
-          %w(new_resource.admin_pw_file.split.last
-             new_resource.agent_pw_file.split.last
-             new_resource.cert_pw_file.split.last).each do |__pfile__|
-            ::File.unlink(__pfile__) if ::File.exist?(__pfile__)
+        new_resource.admin_passwd.tmp do |admin_file|
+          new_resource.agent_passwd.tmp do |agent_file|
+            dsccreg :add_server,
+                    new_resource._?(:admin_passwd, '-w'),
+                    new_resource._?(:agent_passwd, '-G'),
+                    new_resource._?(:no_inter,     '-i'),
+                    new_resource.path
+            Chef::Log.info 'Server instance added to the DSCC registry'
           end
         end
         new_resource.updated_by_last_action(true)
@@ -198,8 +186,8 @@ class Chef::Provider::Dsccreg < Chef::Provider::LWRPBase
   # @param [String] dn
   #   Use the specified bind DN to bind to the instance specified by
   #   instance-path. By default, the dsccreg command uses cn=Directory Manager.
-  # @param [String] admin_pw_file
-  #   Uses `password` from `admin_pw_file` file to access agent configuration.
+  # @param [String] admin_passwd
+  #   Uses `password` from `admin_passwd` file to access agent configuration.
   # @param [String, Integer] hostname
   #   The DSCC registry host name or IP address.
   # @param [String] path
@@ -211,19 +199,13 @@ class Chef::Provider::Dsccreg < Chef::Provider::LWRPBase
   def action_remove_server
     if @current_resource.servers
       converge_by "Removing server instance #{new_resource} from registry" do
-        begin
+        new_resource.admin_passwd.tmp do |admin_file|
           dsccreg :remove_server,
-                  new_resource._?(:dn,            '-B'),
-                  new_resource._?(:admin_pw_file, '-G'),
-                  new_resource._?(:hostname,      '-H'),
+                  new_resource._?(:dn,           '-B'),
+                  new_resource._?(:admin_passwd, '-G'),
+                  new_resource._?(:hostname,     '-H'),
                   new_resource.path
           Chef::Log.info "Server instance #{new_resource} has been removed."
-        ensure
-          %w(new_resource.admin_pw_file.split.last
-             new_resource.agent_pw_file.split.last
-             new_resource.cert_pw_file.split.last).each do |__pfile__|
-            ::File.unlink(__pfile__) if ::File.exist?(__pfile__)
-          end
         end
         new_resource.updated_by_last_action(true)
       end

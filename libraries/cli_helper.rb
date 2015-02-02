@@ -3,9 +3,9 @@
 # Cookbook Name:: odsee
 # Libraries:: cli_helpers
 #
-# Author: Stefano Harding <riddopic@gmail.com>
-#
-# Copyright (C) 2014-2015 Stefano Harding
+# Author:    Stefano Harding <riddopic@gmail.com>
+# License:   Apache License, Version 2.0
+# Copyright: (C) 2014-2015 Stefano Harding
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -61,18 +61,6 @@ module Odsee
           return possible if ::File.executable?(possible)
         end
         nil
-      end
-    end
-
-    # Return the full path to the command
-    #
-    # @return [String]
-    #
-    # @api private
-    [:__dsadm__, :__dsccagent__, :__dsccreg__, :__dsccsetup__, :__dsconf__
-    ].each do |cmd|
-      define_method(cmd) do
-        which(cmd.to_s.tr!('_', ''))
       end
     end
 
@@ -132,7 +120,7 @@ module Odsee
     #
     # @api public
     def suffix_created?
-      @new_resource.admin_passwd.transient do |passwd_file|
+      @new_resource.admin_passwd.tmp do |passwd_file|
         info = info("-ic -w #{passwd_file}")
         info.key?(:suffixes) && info[:suffixes] == new_resource.suffix
       end
@@ -145,7 +133,7 @@ module Odsee
     #
     # @api public
     def empty_suffix?
-      @new_resource.admin_passwd.transient do |passwd_file|
+      @new_resource.admin_passwd.tmp do |passwd_file|
         info = info("-ic -w #{passwd_file}")
         info[:total_entries].to_i < 2
       end
@@ -206,15 +194,15 @@ module Odsee
     #
     # @api public
     def registry(instance)
-      @new_resource.admin_passwd.transient do |passwd_file|
+      @new_resource.admin_passwd.tmp do |passwd_file|
         cmd = "#{__dsccreg__} list-#{instance} -w #{passwd_file}"
+        lines = retrier(on: Errno::ENOENT, sleep: ->(n) { 4**n }) do
+          shell_out!(cmd).stdout.split("\n").reverse
+        end
+        keys = lines.pop.split(' ').map { |line| line.downcase.to_sym }
+        lines.delete_if { |l| l =~ /^--|(instance|agent)\(s\)\s(found|display)/}
+        lines.map { |line| zip_hash(keys, line.split(' ')) }[0]
       end
-      lines = retrier(on: Errno::ENOENT, sleep: ->(n) { 4**n }) do
-        shell_out!(cmd).stdout.split("\n").reverse
-      end
-      keys = lines.pop.split(' ').map { |line| line.downcase.to_sym }
-      lines.delete_if { |l| l =~ /^--|(instance|agent)\(s\)\s(found|display)/ }
-      lines.map { |line| zip_hash(keys, line.split(' ')) }[0]
     end
 
     # Boolean, true if the specified instance type has been added to DSCC
@@ -292,6 +280,18 @@ module Odsee
     end
 
     private #   P R O P R I E T À   P R I V A T A   Vietato L'accesso
+
+    # Return the full path to the command
+    #
+    # @return [String]
+    #
+    # @api private
+    [:__dsadm__, :__dsccagent__, :__dsccreg__, :__dsccsetup__, :__dsconf__
+    ].each do |cmd|
+      define_method(cmd) do
+        which(cmd.to_s.tr!('_', ''))
+      end
+    end
 
     # Return a path to an agent or instance regardless of type
     # @return [String]

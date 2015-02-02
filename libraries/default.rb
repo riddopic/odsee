@@ -3,9 +3,9 @@
 # Cookbook Name:: odsee
 # Libraries:: default
 #
-# Author: Stefano Harding <riddopic@gmail.com>
-#
-# Copyright (C) 2014-2015 Stefano Harding
+# Author:    Stefano Harding <riddopic@gmail.com>
+# License:   Apache License, Version 2.0
+# Copyright: (C) 2014-2015 Stefano Harding
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -142,45 +142,6 @@ module Odsee
         end
       end
     end
-
-    # A file containing the Direcctory Service Manager password.
-    #
-    # @param [String] admin_pw_file
-    #   File to use to store the Direcctory Service Manager password.
-    #
-    # @return [Odsee::Secrets]
-    #
-    # @api private
-    def admin_passwd
-      set_or_return :admin_passwd,
-      Odsee::Secrets.new(node[:odsee][:admin_password], run_context).freeze
-    end
-
-    # A file containing the DSCC agent password.
-    #
-    # @param [String] agent_pw_file
-    #   File to use to store the DSCC agent password.
-    #
-    # @return [Odsee::Secrets]
-    #
-    # @api private
-    def agent_passwd
-      set_or_return :agent_passwd,
-      Odsee::Secrets.new(node[:odsee][:agent_password], run_context).freeze
-    end
-
-    # A file containing the certificate database password.
-    #
-    # @param [String] cert_pw_file
-    #   File to use to store the certificate database password.
-    #
-    # @return [Odsee::Secrets]
-    #
-    # @api private
-    def cert_passwd
-      set_or_return :cert_passwd,
-      Odsee::Secrets.new(node[:odsee][:cert_password], run_context).freeze
-    end
   end
 
   # Include hooks to extend Providers with class and instance methods.
@@ -219,6 +180,7 @@ module Odsee
     if descendant < Chef::Resource
       descendant.class_exec { include Garcon::Resource }
       descendant.class_exec { include Odsee::Resource }
+      descendant.class_exec { include Odsee::SecretsResource }
 
     elsif descendant < Chef::Provider
       descendant.class_exec { include Garcon::Provider }

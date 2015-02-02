@@ -1,11 +1,11 @@
 # encoding: UTF-8
 #
 # Cookbook Name:: odsee
-# Libraries:: default
+# Libraries:: secrets
 #
-# Author: Stefano Harding <riddopic@gmail.com>
-#
-# Copyright (C) 2014-2015 Stefano Harding
+# Author:    Stefano Harding <riddopic@gmail.com>
+# License:   Apache License, Version 2.0
+# Copyright: (C) 2014-2015 Stefano Harding
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,48 +20,87 @@
 # limitations under the License.
 #
 
+require 'tempfile'
+require 'openssl'
+require 'digest/sha2'
+require 'base64'
+require 'fileutils'
+
 # Include hooks to extend with class and instance methods.
 #
 module Odsee
+
+  # instance methods for Resources
+  #
+  module SecretsResource
+    # A file containing the Direcctory Service Manager password.
+    #
+    # @param [String] admin_passwd
+    #   File to use to store the Direcctory Service Manager password.
+    #
+    # @return [Odsee::Secrets]
+    #
+    # @api private
+    def admin_passwd(arg = nil)
+      set_or_return :admin_passwd, arg, kind_of: [Odsee::Secrets, String],
+        default: Odsee::Secrets.new(node[:odsee][:admin_password]).freeze
+    end
+
+    # A file containing the DSCC agent password.
+    #
+    # @param [String] agent_passwd
+    #   File to use to store the DSCC agent password.
+    #
+    # @return [Odsee::Secrets]
+    #
+    # @api private
+    def agent_passwd(arg = nil)
+      set_or_return :agent_passwd, arg, kind_of: [Odsee::Secrets, String],
+        default: Odsee::Secrets.new(node[:odsee][:agent_password]).freeze
+    end
+
+    # A file containing the certificate database password.
+    #
+    # @param [String] cert_passwd
+    #   File to use to store the certificate database password.
+    #
+    # @return [Odsee::Secrets]
+    #
+    # @api private
+    def cert_passwd(arg = nil)
+      set_or_return :cert_passwd, arg, kind_of: [Odsee::Secrets, String],
+        default: Odsee::Secrets.new(node[:odsee][:cert_password]).freeze
+    end
+  end
+
   # Creates a transient file with sensitive content, usefule when you have an
   # excecutable that reads a password from a file but you do not wish to leave
   # the password on the filesystem. When used in a block parameter the file is
-  # written and deleted when the block returns
+  # written and deleted when the block returns, optionally you can encrypt and
+  # decrypt your secret strings with salt, cipher and a splash of obfuscation
   #
   class Secrets
+
+    CIPHER_TYPE = 'aes-256-cbc' unless defined?(CIPHER_TYPE)
 
     # @!attribute [ro] path
     #   @return [String] path to the Odsee::Secrets file
     attr_reader :path
 
     # instantiate a Odsee::Secrets object, you need to call `#write` or use
-    # use in a block with `#transient` for it to contain the secret
-    #
-    # @example
-    #   admin = Odsee::Secrets.new(node[:odsee][:adminpasswd], run_context)
-    #   # => <Odsee::Secrets:0x314fc3c>
-    #          Instance variables:
-    #            @run_context = #<Chef::RunContext:0x00000004e36e68>
-    #            @secret = lsNKQLbrnKbmQ
-    #            @file = file[/tmp/13seori20150131-4204-n6qmgm]
-    #            @tmpfile = file[/tmp/13seori20150131-4204-n6qmgm]
-    #            @path = /tmp/13seori20150131-4204-n6qmgm
-    #            @lock = #<Monitor:0x0000000629e568>
+    # use in a block with `#tmp` for it to contain the secret
     #
     # @param [String] secret
     #   the secret to write to the file
-    # @param [Chef::RunContext] run_context
-    #   the run context of chef run
     #
     # @return [Odsee::Secrets]
     #
     # @api public
-    def initialize(secret, run_context = nil)
-      @run_context = run_context
-      @secret  = secret
-      @tmpfile = secret_file
-      @path = @tmpfile.path
-      @lock = Monitor.new
+    def initialize(secret)
+      @secret  = secret.freeze
+      @tmpfile = secret_tmp.freeze
+      @path    = @tmpfile
+      @lock    = Monitor.new
     end
 
     # @return [String] string of instance
@@ -72,51 +111,12 @@ module Odsee
 
     # Check if the file exists and contains the secret
     #
-    # @example
-    #   admin.exist? # => false
-    #
     # @return [TrueClass, FalseClass]
     #   true when the file exists and contains the secret, otherwise false
     #
     # @api public
     def exist?
-      @lock.synchronize { file_search(@path, @secret) }
-    end
-
-    # Creates the secrets file yields to the block, removes the secrets file
-    # when the block returns
-    #
-    # @example
-    #   admin.transient { |p| shell_out!("open_sesame --passwd-file #{p}") }
-    #   # => Recipe: <Dynamically Defined Resource>
-    #        * file[/tmp/13seori20150131-4204-n6qmgm] action create
-    #          INFO: Processing file[/tmp/13seori20150131-4204-n6qmgm] action create (dynamically defined)
-    #          INFO: file[/tmp/13seori20150131-4204-n6qmgm] created file /tmp/13seori20150131-4204-n6qmgm
-    #          - create new file /tmp/13seori20150131-4204-n6qmgm
-    #            INFO: file[/tmp/13seori20150131-4204-n6qmgm] updated file contents /tmp/13seori20150131-4204-n6qmgm
-    #          - update content in file /tmp/13seori20150131-4204-n6qmgm from none to a88e1f
-    #          - suppressed sensitive resource
-    #            INFO: file[/tmp/13seori20150131-4204-n6qmgm] mode changed to 400
-    #          - change mode from '' to '0400'
-    #
-    # @yield [Block]
-    #   invokes the block
-    #
-    # @yieldreturn [Object]
-    #   the result of evaluating the optional block
-    #
-    # @api public
-    def transient(*args, &block)
-      @lock.synchronize do
-        unless exist?
-          __zero__(@file, @path) if ::File.exist?(@path)
-          @tmpfile.content(@secret)
-          @tmpfile.run_action(:create)
-        end
-        yield @path if block_given?
-      end
-    ensure
-      ::File.unlink(@path) if ::File.exist?(@path)
+      @lock.synchronize { valid? }
     end
 
     # Write the secrets file
@@ -126,12 +126,9 @@ module Odsee
     #
     # @api public
     def write
-      @lock.synchronize do
-        __zero__(@file, @path) if ::File.exist?(@path)
-        @tmpfile.content(@secret)
-        @tmpfile.run_action(:create)
-        @path
-      end
+      @lock.synchronize { atomic_write(@tmpfile, @secret) unless valid? }
+    ensure
+      ::File.chmod(00400, @tmpfile)
     end
 
     # Delete the secrets file
@@ -139,15 +136,55 @@ module Odsee
     # @return [undefined]
     #
     # @api public
-    def del
-      @lock.synchronize { __zero__(@file, @path) if ::File.exist?(@path) }
+    def delete
+      @lock.synchronize do
+        ::File.unlink(@tmpfile) if ::File.exist?(@tmpfile)
+      end
+    end
+    alias_method :del, :delete
+
+    # Creates the secrets file yields to the block, removes the secrets file
+    # when the block returns
+    #
+    # @example
+    #   secret.tmp { |file| shell_out!("open_sesame --passwd-file #{file}") }
+    #
+    # @yield [Block]
+    #   invokes the block
+    #
+    # @yieldreturn [Object]
+    #   the result of evaluating the optional block
+    #
+    # @api public
+    def tmp(*args, &block)
+      @lock.synchronize do
+        atomic_write(@tmpfile, @secret) unless valid?
+        yield @path if block_given?
+      end
+    ensure
+      ::File.unlink(@tmpfile) if ::File.exist?(@tmpfile)
+    end
+
+    # Search a text file for a matching string
+    #
+    # @return [TrueClass, FalseClass]
+    #   True if the file is present and a match was found, otherwise returns
+    #   false if file does not exist and/or does not contain a match
+    #
+    # @api public
+    def valid?
+      return false unless ::File.exist?(@tmpfile)
+      ::File.open(@tmpfile, &:readlines).map! do |line|
+        return true if line.match(@secret)
+      end
+      false
     end
 
     # Define an inspect method
     #
     # @return [String] object inspection
     #
-    # @api private
+    # @api public
     def inspect
       instance_variables.inject([
         "\n#<#{self.class}:0x#{self.object_id.to_s(16)}>",
@@ -158,50 +195,151 @@ module Odsee
       end.join("\n")
     end
 
-    # Search a text file for a matching string
+    # Encrypt the given string
     #
-    # @param [String] file
-    #   The file to search for the given string
-    # @param [String] content
-    #   String to search for in the given file
+    # @param [String] text
+    #   the text to encrypt
+    # @param [String] passwd
+    #   secret passphrase to encrypt with
     #
-    # @return [TrueClass, FalseClass]
-    #   True if the file is present and a match was found, otherwise returns
-    #   false if file does not exist and/or does not contain a match
+    # @return [String]
+    #   encrypted text, suitable for deciphering with #decrypt
     #
-    # @api private
-    def file_search(file, content)
-      return false unless ::File.exist?(file)
-      ::File.open(file, &:readlines).map! do |line|
-        return true if line.match(content)
-      end
-      false
+    # @api public
+    def encrypt(plaintext, passwd, options={})
+      cipher = new_cipher(:encrypt, passwd, options)
+      cipher.iv = iv = cipher.random_iv
+      ciphertext = cipher.update(plaintext)
+      ciphertext << cipher.final
+      Base64.encode64(combine_iv_and_ciphertext(iv, ciphertext))
+    end
+
+    # Decrypt the given string, using the key and iv supplied
+    #
+    # @param [String] encrypted_text
+    #   the text to decrypt, probably produced with #decrypt
+    # @param [String] passwd
+    #   secret passphrase to decrypt with
+    #
+    # @return [String]
+    #   the decrypted plaintext
+    #
+    # @api public
+    def decrypt(ciphertext, passwd, options={})
+      iv_and_ciphertext = Base64.decode64(ciphertext)
+      cipher = new_cipher(:decrypt, passwd, options)
+      cipher.iv, ciphertext = iv_and_ciphertext(cipher, iv_and_ciphertext)
+      plaintext = cipher.update(ciphertext)
+      plaintext << cipher.final
+      plaintext
     end
 
     private #   P R O P R I E T À   P R I V A T A   Vietato L'accesso
 
+    # Write to a file atomically. Useful for situations where you don't
+    # want other processes or threads to see half-written files.
+    #
+    # @param [String] file
+    #   fill path of the file to write to
+    # @param [String] secret
+    #   content to write to file
+    #
+    # @api private
+    def atomic_write(file, secret, tmp_dir = Dir.tmpdir)
+      tmp_file = Tempfile.new(::File.basename(file), tmp_dir)
+      tmp_file.write(secret)
+      tmp_file.close
+
+      FileUtils.mv(tmp_file.path, file)
+      begin
+        ::File.chmod(00400, file)
+      rescue Errno::EPERM, Errno::EACCES
+        # Changing file ownership/permissions failed
+      end
+    ensure
+      tmp_file.close
+      tmp_file.unlink
+    end
+
+    # Lock a file for a block so only one process can modify it at a time
+    #
+    # @param [String] file
+    #   fill path of the file to lock
+    #
+    # @yield [Block]
+    #   invokes the block
+    #
+    # @yieldreturn [Object]
+    #   the result of evaluating the optional block
+    #
+    # @api private
+    def lock_file(file, &block)
+      if ::File.exist?(file)
+        ::File.open(file, 'r+') do |f|
+          begin
+            f.flock ::File::LOCK_EX
+            yield
+          ensure
+            f.flock ::File::LOCK_UN
+          end
+        end
+      else
+        yield
+      end
+    end
+
     # @return [String] tmp_file
     # @api private
-    def tmp_file
-      Tempfile.new(rand(0x100000000).to_s(36)).path.freeze
+    def secret_tmp(tmp_dir = Dir.tmpdir)
+      Tempfile.new(rand(0x100000000).to_s(36), tmp_dir).path.freeze
     end
 
-    # @api private
-    def __zero__(what, where)
-      ::File.unlink(where)
-      what.checksum = nil
-    end
+    protected #      A T T E N Z I O N E   A R E A   P R O T E T T A
 
-    # Creates a temp file for just the duration of the monitor.
+    # Create a new cipher machine, with its dials set in the given direction
     #
-    # @return [Chef::Resource::File]
+    # @param [:encrypt, :decrypt]
+    #   direction whether to encrypt or decrypt
+    # @param [String] pass
+    #   secret passphrase to decrypt with
+    #
     # @api private
-    def secret_file
-      @file ||= Chef::Resource::File.new(tmp_file, @run_context)
-      @file.sensitive true
-      @file.backup false
-      @file.mode 00400
-      @file
+    def new_cipher(direction, passwd, options={})
+      check_platform_can_encrypt!
+      cipher = OpenSSL::Cipher::Cipher.new(CIPHER_TYPE)
+      case direction
+      when :encrypt
+        cipher.encrypt
+      when :decrypt
+        cipher.decrypt
+      else
+        raise "Bad cipher direction #{direction}"
+      end
+      cipher.key = encrypt_key(passwd, options)
+      cipher
+    end
+
+    # prepend the initialization vector to the encoded message
+    # @api private
+    def combine_iv_and_ciphertext(iv, message)
+      message.force_encoding("BINARY") if message.respond_to?(:force_encoding)
+      iv.force_encoding("BINARY") if iv.respond_to?(:force_encoding)
+      iv + message
+    end
+
+    # pull the initialization vector from the front of the encoded message
+    # @api private
+    def separate_iv_and_ciphertext(cipher, iv_and_ciphertext)
+      idx = cipher.iv_len
+      [iv_and_ciphertext[0..(idx-1)], iv_and_ciphertext[idx..-1]]
+    end
+
+    # convert the passwd passphrase into the key used for encryption
+    # @api private
+    def encrypt_key(passwd, options={})
+      passwd = passwd.to_s
+      raise 'Missing encryption password!' if passwd.empty?
+      Digest::SHA256.digest(passwd)
     end
   end
 end

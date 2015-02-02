@@ -3,9 +3,9 @@
 # Cookbook Name:: odsee
 # Libraries:: helpers
 #
-# Author: Stefano Harding <riddopic@gmail.com>
-#
-# Copyright (C) 2014-2015 Stefano Harding
+# Author:    Stefano Harding <riddopic@gmail.com>
+# License:   Apache License, Version 2.0
+# Copyright: (C) 2014-2015 Stefano Harding
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -35,24 +35,6 @@ module Odsee
       salt = SecureRandom.base64(24)
       pbkdf2 = OpenSSL::PKCS5.pbkdf2_hmac_sha1(password, salt, 1000, 24)
       Base64.encode64(pbkdf2)
-    end
-
-    # @return [String] tmp_file
-    # @api private
-    def tmp_file
-      Tempfile.new(rand(0x100000000).to_s(36)).path
-    end
-
-    # Creates a temp file for just the duration of the monitor.
-    #
-    # @return [Chef::Resource::File]
-    # @api private
-    def secure_tmp_file
-      file ||= Chef::Resource::File.new(tmp_file, run_context)
-      file.sensitive true
-      file.backup false
-      file.mode 00400
-      file
     end
   end
 
@@ -86,7 +68,7 @@ module Odsee
     # @param opts [Hash{Symbol => Value}]
     # @option opts [String] :host
     #   the ldap host to connect to, default is `localhost`
-    # @option opts [Integer] :port
+    # @option opts [Integer] :porbt
     #   the ldap port to connect to, default is `389`
     # @option opts [Hash] :auth
     #   hash containing authorization parameters, supported values include

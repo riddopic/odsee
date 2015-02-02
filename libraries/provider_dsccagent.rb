@@ -3,9 +3,9 @@
 # Cookbook Name:: odsee
 # HWRP:: dsccagent
 #
-# Author: Stefano Harding <riddopic@gmail.com>
-#
-# Copyright (C) 2014-2015 Stefano Harding
+# Author:    Stefano Harding <riddopic@gmail.com>
+# License:   Apache License, Version 2.0
+# Copyright: (C) 2014-2015 Stefano Harding
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -83,7 +83,7 @@ class Chef::Provider::Dsccagent < Chef::Provider::LWRPBase
   #   Does not prompt for password.
   # @param [Integer] agent_port
   #   Specifies DSCC agent port. The default is 3997.
-  # @param [String] agent_pw_file
+  # @param [String] agent_passwd
   #   Use the Direcctory Service Agent password specified in file.
   # @param [String] path
   #   Full path to the existing DSCC agent instance. The default path is to use:
@@ -97,19 +97,13 @@ class Chef::Provider::Dsccagent < Chef::Provider::LWRPBase
       Chef::Log.info "#{new_resource} already created - nothing to do"
     else
       converge_by 'Creating the DSCC agent instance' do
-        begin
+        new_resource.agent_passwd.tmp do |agent_file|
           dsccagent :create,
-                    new_resource._?(:no_inter,      '-i'),
-                    new_resource._?(:agent_port,    '-p'),
-                    new_resource._?(:agent_pw_file, '-w'),
+                    new_resource._?(:no_inter,     '-i'),
+                    new_resource._?(:agent_port,   '-p'),
+                    new_resource._?(:agent_passwd, '-w'),
                     new_resource.path
           Chef::Log.info "DSCC agent instance initialized for #{new_resource}"
-        ensure
-          %w(new_resource.admin_pw_file.split.last
-             new_resource.agent_pw_file.split.last
-             new_resource.cert_pw_file.split.last).each do |__pfile__|
-            ::File.unlink(__pfile__) if ::File.exist?(__pfile__)
-          end
         end
         new_resource.updated_by_last_action(true)
       end

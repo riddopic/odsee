@@ -3,9 +3,9 @@
 # Cookbook Name:: odsee
 # HWRP:: dsccsetup
 #
-# Author: Stefano Harding <riddopic@gmail.com>
-#
-# Copyright (C) 2014-2015 Stefano Harding
+# Author:    Stefano Harding <riddopic@gmail.com>
+# License:   Apache License, Version 2.0
+# Copyright: (C) 2014-2015 Stefano Harding
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -88,7 +88,7 @@ class Chef::Provider::Dsccsetup < Chef::Provider::LWRPBase
   #       * The base DN for the suffix containing configuration
   #         information is cn=dscc.
   #
-  # @param [String] admin_pw_file
+  # @param [String] admin_passwd
   #   Use the Direcctory Service Manager password specified in file.
   # @param [Integer] registry_ldap_port
   #   The port number to use for LDAP. The default is 3998.
@@ -99,25 +99,17 @@ class Chef::Provider::Dsccsetup < Chef::Provider::LWRPBase
   #
   # @api private
   def action_ads_create
-    binding.pry
-
     if @current_resource.created
       Chef::Log.info "#{new_resource} already exists - nothing to do"
     else
       converge_by "Initialize DSCC registry for #{new_resource}" do
-        begin
+        new_resource.admin_passwd.tmp do |admin_file|
           lock.enter
           do_prerequisite
           dsccsetup :ads_create,
-                    new_resource._?(:admin_pw_file,       '-w'),
+                    new_resource._?(:admin_passwd,        '-w'),
                     new_resource._?(:registry_ldap_port,  '-p'),
                     new_resource._?(:registry_ldaps_port, '-P')
-        ensure
-          %w(new_resource.admin_pw_file.split.last
-             new_resource.agent_pw_file.split.last
-             new_resource.cert_pw_file.split.last).each do |__pfile__|
-            ::File.unlink(__pfile__) if ::File.exist?(__pfile__)
-          end
           lock.exit
         end
         Chef::Log.info "DSCC registry initialized for #{new_resource}"

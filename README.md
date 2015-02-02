@@ -262,7 +262,7 @@ For example:
      last successful startup.
   * `schema_push`: Ensures manually modified schema is replicated to
      consumers.
-  * `cert_pw_file`: Reads certificate database password from `cert_pw_file`.
+  * `cert_passwd`: Reads certificate database password from `cert_passwd`.
 
 #### Examples
 
@@ -335,14 +335,14 @@ For example:
   * `no_inter`: When true does not prompt for password and/or does not prompt
      for confirmation before performing the operation.
   * `agent_port`: Specifies the port for the DSCC agent. The default is 3997.
-  * `agent_pw_file`: A file containing the DSCC agent password.
+  * `agent_passwd`: A file containing the DSCC agent password.
   * `agent_path`: Full path to the existing DSCC agent instance. The default
      path is to use: install-path/var/dcc/agentd.
   * `snmp_v3`: Boolean, true if SNMP version 3 should be used, otherwise false.
   * `snmp_port`: The port number to use for SNMP traffic. Default is 3996.
   * `ds_port`: The port number to use for traffic from Directory Servers to
      agent. The default is 3995.
-  * `admin_pw_file`: A file containing the Direcctory Service Manager password.
+  * `admin_passwd`: A file containing the Direcctory Service Manager password.
 
 #### Examples
 
@@ -402,7 +402,7 @@ For example:
     instance.
   * `hostname`: The DSCC registry host name. By default, the `dsccreg` command
     uses the local host name returned by the operating system.
-  * `agent_pw_file`: A file containing the DSCC agent password.
+  * `agent_passwd`: A file containing the DSCC agent password.
   * `agent_path`: Full path to the existing DSCC agent instance. The default
     path is to use: install-path/var/dcc/agent.
   * `force`: If the instance should be forcibly shut down. When used with
@@ -412,7 +412,7 @@ For example:
     instance is not initiated by the current installation.
   * `dn`: Defines the Directory Manager DN to use. The default Directory Manager
     DN is `cn=Directory Manager`.
-  * `admin_pw_file`: A file containing the Direcctory Service Manager password.
+  * `admin_passwd`: A file containing the Direcctory Service Manager password.
   * `agent_port`: Specifies port as the DSCC agent port to use for communicating
     with this server instance.
 
