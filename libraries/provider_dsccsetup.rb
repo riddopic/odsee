@@ -103,7 +103,7 @@ class Chef::Provider::Dsccsetup < Chef::Provider::LWRPBase
       Chef::Log.info "#{new_resource} already exists - nothing to do"
     else
       converge_by "Initialize DSCC registry for #{new_resource}" do
-        new_resource.admin_passwd.tmp do |admin_file|
+        new_resource.admin_passwd.tmp do |__p__|
           lock.enter
           do_prerequisite
           dsccsetup :ads_create,

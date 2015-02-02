@@ -168,5 +168,4 @@ class Chef::Resource::Dsccagent < Chef::Resource::LWRPBase
   attribute :ds_port,
             kind_of: Integer,
             default: lazy { node[:odsee][:ds_port] }
-
 end

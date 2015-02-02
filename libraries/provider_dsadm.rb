@@ -111,7 +111,7 @@ class Chef::Provider::Dsadm < Chef::Provider::LWRPBase
       Chef::Log.info "#{new_resource} already created - nothing to do"
     else
       converge_by 'Creating a Directory Server instance' do
-        new_resource.admin_passwd.tmp do |admin_file|
+        new_resource.admin_passwd.tmp do |__p__|
           dsadm :create,
                 new_resource._?(:below,        '-B'),
                 new_resource._?(:no_inter,     '-i'),
@@ -176,7 +176,7 @@ class Chef::Provider::Dsadm < Chef::Provider::LWRPBase
       Chef::Log.info "#{new_resource} already enabled - nothing to do"
     else
       converge_by "Start the Directory Server instance for #{new_resource}" do
-        new_resource.cert_passwd.tmp do |cert_file|
+        new_resource.cert_passwd.tmp do |__p__|
           dsadm :start,
                 new_resource._?(:safe_mode,              '-E'),
                 new_resource._?(:no_inter,               '-i'),

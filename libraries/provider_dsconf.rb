@@ -113,7 +113,7 @@ class Chef::Provider::Dsconf < Chef::Provider::LWRPBase
       Chef::Log.info "#{new_resource} already created - nothing to do"
     else
       converge_by "Creating #{new_resource} suffix entry in the DIT" do
-        new_resource.admin_passwd.tmp do |admin_file|
+        new_resource.admin_passwd.tmp do |__p__|
           dsconf :create_suffix,
                  new_resource._?(:hostname,     '-h'),
                  new_resource._?(:ldap_port,    '-p'),
@@ -249,7 +249,7 @@ class Chef::Provider::Dsconf < Chef::Provider::LWRPBase
     if @current_resource.empty
       converge_by "Populating #{new_resource.suffix} with LDIF content from " \
                   "#{new_resource.ldif_file}" do
-        new_resource.admin_passwd.tmp do |admin_file|
+        new_resource.admin_passwd.tmp do |__p__|
           dsconf :import,
                  new_resource._?(:hostname,     '-H'),
                  new_resource._?(:port,         '-p'),

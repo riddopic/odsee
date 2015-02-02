@@ -29,7 +29,6 @@ require 'fileutils'
 # Include hooks to extend with class and instance methods.
 #
 module Odsee
-
   # instance methods for Resources
   #
   module SecretsResource
@@ -80,7 +79,6 @@ module Odsee
   # decrypt your secret strings with salt, cipher and a splash of obfuscation
   #
   class Secrets
-
     CIPHER_TYPE = 'aes-256-cbc' unless defined?(CIPHER_TYPE)
 
     # @!attribute [ro] path
@@ -187,7 +185,7 @@ module Odsee
     # @api public
     def inspect
       instance_variables.inject([
-        "\n#<#{self.class}:0x#{self.object_id.to_s(16)}>",
+        "\n#<#{self.class}:0x#{object_id.to_s(16)}>",
         "\tInstance variables:"
       ]) do |result, item|
         result << "\t\t#{item} = #{instance_variable_get(item)}"
@@ -206,7 +204,7 @@ module Odsee
     #   encrypted text, suitable for deciphering with #decrypt
     #
     # @api public
-    def encrypt(plaintext, passwd, options={})
+    def encrypt(plaintext, passwd, options = {})
       cipher = new_cipher(:encrypt, passwd, options)
       cipher.iv = iv = cipher.random_iv
       ciphertext = cipher.update(plaintext)
@@ -225,7 +223,7 @@ module Odsee
     #   the decrypted plaintext
     #
     # @api public
-    def decrypt(ciphertext, passwd, options={})
+    def decrypt(ciphertext, passwd, options = {})
       iv_and_ciphertext = Base64.decode64(ciphertext)
       cipher = new_cipher(:decrypt, passwd, options)
       cipher.iv, ciphertext = iv_and_ciphertext(cipher, iv_and_ciphertext)
@@ -304,7 +302,7 @@ module Odsee
     #   secret passphrase to decrypt with
     #
     # @api private
-    def new_cipher(direction, passwd, options={})
+    def new_cipher(direction, passwd, options = {})
       check_platform_can_encrypt!
       cipher = OpenSSL::Cipher::Cipher.new(CIPHER_TYPE)
       case direction
@@ -313,7 +311,7 @@ module Odsee
       when :decrypt
         cipher.decrypt
       else
-        raise "Bad cipher direction #{direction}"
+        fail "Bad cipher direction #{direction}"
       end
       cipher.key = encrypt_key(passwd, options)
       cipher
@@ -322,8 +320,8 @@ module Odsee
     # prepend the initialization vector to the encoded message
     # @api private
     def combine_iv_and_ciphertext(iv, message)
-      message.force_encoding("BINARY") if message.respond_to?(:force_encoding)
-      iv.force_encoding("BINARY") if iv.respond_to?(:force_encoding)
+      message.force_encoding('BINARY') if message.respond_to?(:force_encoding)
+      iv.force_encoding('BINARY') if iv.respond_to?(:force_encoding)
       iv + message
     end
 
@@ -331,14 +329,14 @@ module Odsee
     # @api private
     def separate_iv_and_ciphertext(cipher, iv_and_ciphertext)
       idx = cipher.iv_len
-      [iv_and_ciphertext[0..(idx-1)], iv_and_ciphertext[idx..-1]]
+      [iv_and_ciphertext[0..(idx - 1)], iv_and_ciphertext[idx..-1]]
     end
 
     # convert the passwd passphrase into the key used for encryption
     # @api private
-    def encrypt_key(passwd, options={})
+    def encrypt_key(passwd, _options = {})
       passwd = passwd.to_s
-      raise 'Missing encryption password!' if passwd.empty?
+      fail 'Missing encryption password!' if passwd.empty?
       Digest::SHA256.digest(passwd)
     end
   end

@@ -94,15 +94,15 @@ default[:odsee][:dsadm][:group_name] = 'root'
 default[:odsee][:snmp_v3] = false
 
 # Path of the DSCC Registry.
-default[:odsee][:registry_path] = ->{
+default[:odsee][:registry_path] = ->do
   ::File.join(node[:odsee][:install_dir], 'dsee7/var/dcc/ads')
-}
+end
 
 # Full path to the existing DSCC agent instance. The default path is to use:
 # install-path/var/dcc/agent
-default[:odsee][:agent_path] = ->{
+default[:odsee][:agent_path] = ->do
   ::File.join(node[:odsee][:install_dir], 'dsee7/var/dcc/agent')
-}
+end
 
 # Creates the Directory Server instance in an existing directory, specified by
 # the `instance_path`. The existing directory must be empty. On UNIX machines,
@@ -120,7 +120,7 @@ default[:odsee][:safe_mode] = false
 default[:odsee][:schema_push] = false
 
 # If the instance should be forcibly shut down. When used with
-#`stop-running-instances`, the command forcibly shuts down all the running
+# `stop-running-instances`, the command forcibly shuts down all the running
 # server instances that are created using the same dsadm installation. When
 # used with stop, the command forcibly shuts down the instance even if the
 # instance is not initiated by the current installation.

@@ -91,8 +91,8 @@ class Chef::Provider::Dsccreg < Chef::Provider::LWRPBase
       Chef::Log.info "#{new_resource} already created - nothing to do"
     else
       converge_by "Adding #{new_resource} instance to the DSCC registry" do
-        new_resource.admin_passwd.tmp do |admin_file|
-          new_resource.agent_passwd.tmp do |agent_file|
+        new_resource.admin_passwd.tmp do |__p__|
+          new_resource.agent_passwd.tmp do |__p__|
             dsccreg :add_agent,
                     new_resource._?(:description,  '-d'),
                     new_resource._?(:hostname,     '-H'),
@@ -164,8 +164,8 @@ class Chef::Provider::Dsccreg < Chef::Provider::LWRPBase
       Chef::Log.info "#{new_resource} already created - nothing to do"
     else
       converge_by "Adding server instance #{new_resource} to the registry" do
-        new_resource.admin_passwd.tmp do |admin_file|
-          new_resource.agent_passwd.tmp do |agent_file|
+        new_resource.admin_passwd.tmp do |__p__|
+          new_resource.agent_passwd.tmp do |__p__|
             dsccreg :add_server,
                     new_resource._?(:admin_passwd, '-w'),
                     new_resource._?(:agent_passwd, '-G'),
@@ -199,7 +199,7 @@ class Chef::Provider::Dsccreg < Chef::Provider::LWRPBase
   def action_remove_server
     if @current_resource.servers
       converge_by "Removing server instance #{new_resource} from registry" do
-        new_resource.admin_passwd.tmp do |admin_file|
+        new_resource.admin_passwd.tmp do |__p__|
           dsccreg :remove_server,
                   new_resource._?(:dn,           '-B'),
                   new_resource._?(:admin_passwd, '-G'),

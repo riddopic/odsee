@@ -228,5 +228,4 @@ class Chef::Resource::Dsconf < Chef::Resource::LWRPBase
   # @api public
   attribute :ldif_file,
             kind_of: String
-
 end

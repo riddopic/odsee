@@ -20,9 +20,10 @@
 # limitations under the License.
 #
 
-single_include 'odsee::default'
+#       T H I S   I S   A   E X A M P L E   R E C I P E   F O R
+#       D E M O N S T R A T I O N   P U R P O S E S   O N L Y
 
-require 'securerandom' unless defined?(SecureRandom)
+single_include 'odsee::default'
 
 # Generate passwords if none are provided, passwords are saved in the node
 # attributes, at the moment unencrypted although encrypting them does not
@@ -32,6 +33,7 @@ require 'securerandom' unless defined?(SecureRandom)
 # There are different passwords for various components, they could all be set
 # the same for simplicity or each can be different.
 #
+require 'securerandom' unless defined?(SecureRandom)
 monitor.synchronize do
   node.set_unless[:odsee][:admin_password] = pwd_hash(SecureRandom.hex)[0..12]
   node.set_unless[:odsee][:agent_password] = pwd_hash(SecureRandom.hex)[0..12]
@@ -40,7 +42,8 @@ monitor.synchronize do
 end
 
 # This is an example of how you can use the providers in this cookbook to create
-# a LDAP directory tree.
+# a LDAP directory tree. We create the dc=example,dc=com suffix and use the
+# supplied Example.ldif file to populate the directory.
 
 dsccsetup :ads_create do
   action :ads_create

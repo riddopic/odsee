@@ -125,7 +125,7 @@ module Odsee
         info.key?(:suffixes) && info[:suffixes] == @new_resource.suffix[1..-2]
       end
     end
-    
+
     # Boolean to check if the suffix has been populated with entries
     #
     # @return [TrueClass, FalseClass]
@@ -200,7 +200,7 @@ module Odsee
           shell_out!(cmd).stdout.split("\n").reverse
         end
         keys = lines.pop.split(' ').map { |line| line.downcase.to_sym }
-        lines.delete_if { |l| l =~ /^--|(instance|agent)\(s\)\s(found|display)/}
+        lines.delete_if { |l| l =~ /^--|(instance|agent)\(s\)\s(found|display)/ }
         lines.map { |line| zip_hash(keys, line.split(' ')) }[0]
       end
     end

@@ -97,7 +97,7 @@ class Chef::Provider::Dsccagent < Chef::Provider::LWRPBase
       Chef::Log.info "#{new_resource} already created - nothing to do"
     else
       converge_by 'Creating the DSCC agent instance' do
-        new_resource.agent_passwd.tmp do |agent_file|
+        new_resource.agent_passwd.tmp do |__p__|
           dsccagent :create,
                     new_resource._?(:no_inter,     '-i'),
                     new_resource._?(:agent_port,   '-p'),

@@ -96,7 +96,7 @@ module Odsee
       def validate_host(host)
         IPSocket.getaddress(host)
       rescue
-        fail InvalidHost.new host
+        raise InvalidHost.new host
       end
 
       # Helper method to validate file

@@ -168,5 +168,4 @@ class Chef::Resource::Dsccreg < Chef::Resource::LWRPBase
   attribute :no_inter,
             kind_of: [TrueClass, FalseClass],
             default: lazy { node[:odsee][:no_inter] }
-
 end
