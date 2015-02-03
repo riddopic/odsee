@@ -85,7 +85,7 @@ class Chef::Provider::Dsccreg < Chef::Provider::LWRPBase
   #
   # @return [Chef::Provider::Dsccreg]
   #
-  # @api private
+  # @api public
   def action_add_agent
     if @current_resource.agents
       Chef::Log.info "#{new_resource} already created - nothing to do"
@@ -121,7 +121,7 @@ class Chef::Provider::Dsccreg < Chef::Provider::LWRPBase
   #
   # @return [Chef::Provider::Dsccreg]
   #
-  # @api private
+  # @api public
   def action_remove_agent
     if @current_resource.agents
       converge_by "Remove #{new_resource} instance from the registry" do
@@ -158,7 +158,7 @@ class Chef::Provider::Dsccreg < Chef::Provider::LWRPBase
   #
   # @return [Chef::Provider::Dsccreg]
   #
-  # @api private
+  # @api public
   def action_add_server
     if @current_resource.servers
       Chef::Log.info "#{new_resource} already created - nothing to do"
@@ -195,7 +195,7 @@ class Chef::Provider::Dsccreg < Chef::Provider::LWRPBase
   #
   # @return [Chef::Provider::Dsccreg]
   #
-  # @api private
+  # @api public
   def action_remove_server
     if @current_resource.servers
       converge_by "Removing server instance #{new_resource} from registry" do

@@ -28,8 +28,6 @@
 class Chef::Provider::LdapEntry < Chef::Provider::LWRPBase
   include Odsee
 
-  use_inline_resources if defined?(:use_inline_resources)
-
   # Boolean indicating if WhyRun is supported by this provider
   #
   # @return [TrueClass, FalseClass]
@@ -62,6 +60,7 @@ class Chef::Provider::LdapEntry < Chef::Provider::LWRPBase
     @current_resource
   end
 
+  # @api public
   def action_create
     if @new_resource.created
       Chef::Log.info "#{new_resource.dn} already created - nothing to do"
@@ -76,6 +75,7 @@ class Chef::Provider::LdapEntry < Chef::Provider::LWRPBase
     @current_resource.created(true)
   end
 
+  # @api public
   def action_delete
     if @new_resource.created
       converge_by "Deleting #{new_resource.dn} entry from directory" do

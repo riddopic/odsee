@@ -29,12 +29,6 @@
 class Chef::Provider::Dsccsetup < Chef::Provider::LWRPBase
   include Odsee
 
-  # def initialize(name, run_context = nil)
-  #   super
-  #   @created = nil
-  #   do_prerequisite
-  # end
-
   # Boolean indicating if WhyRun is supported by this provider.
   #
   # @return [TrueClass, FalseClass]
@@ -97,7 +91,7 @@ class Chef::Provider::Dsccsetup < Chef::Provider::LWRPBase
   #
   # @return [Chef::Resource::Dsccsetup]
   #
-  # @api private
+  # @api public
   def action_ads_create
     if @current_resource.created
       Chef::Log.info "#{new_resource} already exists - nothing to do"
@@ -130,6 +124,8 @@ class Chef::Provider::Dsccsetup < Chef::Provider::LWRPBase
   # @return [undefined]
   #
   # @return [Chef::Resource::Dsccsetup]
+  #
+  # @api public
   def action_ads_delete
     if @current_resource.created
       converge_by "Deleting DSCC registry for #{new_resource}" do
@@ -145,6 +141,7 @@ class Chef::Provider::Dsccsetup < Chef::Provider::LWRPBase
 
   private #   P R O P R I E T À   P R I V A T A   Vietato L'accesso
 
+  # @api private
   def do_prerequisite
     lock.synchronize do
       %w(gtk2-engines).each do |pkg|

@@ -34,8 +34,6 @@ class Chef::Provider::Dsconf < Chef::Provider::LWRPBase
     @auth_required = true
   end
 
-  use_inline_resources if defined?(:use_inline_resources)
-
   # Boolean indicating if WhyRun is supported by this provider
   #
   # @return [TrueClass, FalseClass]
@@ -107,7 +105,7 @@ class Chef::Provider::Dsconf < Chef::Provider::LWRPBase
   #
   # @return [Chef::Resource::Dsconf]
   #
-  # @api private
+  # @api public
   def action_create_suffix
     if @current_resource.created
       Chef::Log.info "#{new_resource} already created - nothing to do"
@@ -145,7 +143,7 @@ class Chef::Provider::Dsconf < Chef::Provider::LWRPBase
   #
   # @return [Chef::Resource::Dsconf]
   #
-  # @api private
+  # @api public
   def action_delete_suffix
     if @current_resource.created
       converge_by "Deleting #{new_resource} suffix entry from the DIT" do
@@ -243,7 +241,7 @@ class Chef::Provider::Dsconf < Chef::Provider::LWRPBase
   #
   # @return [Chef::Resource::Dsconf]
   #
-  # @api private
+  # @api public
   def action_import
     if @current_resource.empty
       converge_by "Populating #{new_resource.suffix} with LDIF content from " \

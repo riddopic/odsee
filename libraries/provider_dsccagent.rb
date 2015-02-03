@@ -91,7 +91,7 @@ class Chef::Provider::Dsccagent < Chef::Provider::LWRPBase
   #
   # @return [Chef::Resource::Dsccagent]
   #
-  # @api private
+  # @api public
   def action_create
     if @current_resource.created
       Chef::Log.info "#{new_resource} already created - nothing to do"
@@ -119,7 +119,7 @@ class Chef::Provider::Dsccagent < Chef::Provider::LWRPBase
   #
   # @return [Chef::Resource::Dsccagent]
   #
-  # @api private
+  # @api public
   def action_delete
     if @current_resource.created
       converge_by "Deleting the DSCC agent instance for #{new_resource}" do
@@ -147,7 +147,7 @@ class Chef::Provider::Dsccagent < Chef::Provider::LWRPBase
   #
   # @return [Chef::Resource::Dsccagent]
   #
-  # @api private
+  # @api public
   def action_enable_snmp
     if @current_resource.enabled
       Chef::Log.info "#{new_resource} already configured - nothing to do"
@@ -173,7 +173,7 @@ class Chef::Provider::Dsccagent < Chef::Provider::LWRPBase
   #
   # @return [Chef::Resource::Dsccagent]
   #
-  # @api private
+  # @api public
   def action_disable_snmp
     if @current_resource.enabled
       converge_by "Unconfigure the SNMP agent for #{new_resource}" do
@@ -196,7 +196,7 @@ class Chef::Provider::Dsccagent < Chef::Provider::LWRPBase
   #
   # @return [Chef::Resource::Dsccagent]
   #
-  # @api private
+  # @api public
   def action_start
     if @current_resource.running
       Chef::Log.info "#{new_resource} is running - nothing to do"
@@ -218,7 +218,7 @@ class Chef::Provider::Dsccagent < Chef::Provider::LWRPBase
   #
   # @return [Chef::Resource::Dsccagent]
   #
-  # @api private
+  # @api public
   def action_stop
     if @current_resource.running
       converge_by "Stopping the DSCC agent instance for #{new_resource}" do

@@ -105,7 +105,7 @@ class Chef::Provider::Dsadm < Chef::Provider::LWRPBase
   #
   # @return [Chef::Resource::Dsadm]
   #
-  # @api private
+  # @api public
   def action_create
     if @current_resource.created
       Chef::Log.info "#{new_resource} already created - nothing to do"
@@ -139,7 +139,7 @@ class Chef::Provider::Dsadm < Chef::Provider::LWRPBase
   #
   # @return [Chef::Resource::Dsadm]
   #
-  # @api private
+  # @api public
   def action_delete
     if @current_resource.created
       converge_by "Deleting Directory Server instance for #{new_resource}" do
@@ -170,7 +170,7 @@ class Chef::Provider::Dsadm < Chef::Provider::LWRPBase
   #
   # @return [Chef::Resource::Dsadm]
   #
-  # @api private
+  # @api public
   def action_start
     if @current_resource.running
       Chef::Log.info "#{new_resource} already enabled - nothing to do"
@@ -205,7 +205,7 @@ class Chef::Provider::Dsadm < Chef::Provider::LWRPBase
   #
   # @return [Chef::Resource::Dsadm]
   #
-  # @api private
+  # @api public
   def action_stop
     if @current_resource.running
       converge_by 'Stopping the Directory Server instance' do

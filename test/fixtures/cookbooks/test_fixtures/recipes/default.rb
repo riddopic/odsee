@@ -13,3 +13,10 @@ template '/root/.bash_profile' do
   variables path: ::File.join(node[:odsee][:install_dir], 'dsee7/bin')
   action :nothing
 end.run_action(:create)
+
+template '/etc/motd' do
+  owner 'root'
+  group 'root'
+  mode 00644
+  action :create
+end
