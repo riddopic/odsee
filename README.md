@@ -97,10 +97,10 @@ An example recipe that also configures the Directory Server using the included
 providers
 
     #       T H I S   I S   A   E X A M P L E   R E C I P E   F O R
-    #       D E M O N S T R A T I O N   P U R P O S E S   O N L Y
-    
+    #       D E M O N S T R A T I O N   P U R P O S E S   O N L Y !
+
     single_include 'odsee::default'
-    
+
     # Generate passwords if none are provided, passwords are saved in the node
     # attributes, at the moment unencrypted although encrypting them does not
     # provide any level of protection because the machine must always be able
@@ -116,41 +116,41 @@ providers
       node.set_unless[:odsee][:cert_passwd]  = pwd_hash(SecureRandom.hex)[0..12]
       node.save unless Chef::Config[:solo]
     end
-    
+
     # This is an example of how you can use the providers in this cookbook to
     # create a LDAP directory tree. We create the dc=example,dc=com suffix and
     # use the supplied Example.ldif file to populate the directory.
-    
+
     base_ldif = ::File.join(
       node[:odsee][:install_dir], 'dsee7/resources/ldif/Example.ldif'
     )
-    
+
     dsccsetup :ads_create do
       action :ads_create
     end
-    
+
     dsccagent node[:odsee][:agent_path].call do
       action :create
     end
-    
+
     dsccreg node[:odsee][:agent_path].call do
       action :add_agent
     end
-    
+
     dsccagent node[:odsee][:agent_path].call do
       action :start
     end
-    
+
     dsadm node[:odsee][:instance_path] do
       action [:create, :start]
     end
-    
+
     dsconf node[:odsee][:suffix] do
       path node[:odsee][:instance_path]
       ldif_file base_ldif
       action [:create_suffix, :import]
     end
-    
+
     dsccreg node[:odsee][:instance_path] do
       action :add_server
     end
@@ -170,10 +170,10 @@ General attributes can be found in the `default.rb` file.
 * `node[:odsee][:source][:filename]`: [String] The location to the install zip
   file containing the Oracle Directory Server, can be any valid file path or
   URL. Default value is `needs to be determined`.
-  
+
 * `node[:odsee][:source][:checksum]`: [String] The SHA-1 checksum of the zip
   file.
-  
+
 * `node[:odsee][:install_dir]`: [String] Path under which Directory Server is
   installed. Default value is `/opt`.
 
@@ -206,16 +206,16 @@ General attributes can be found in the `default.rb` file.
 
 * `node[:odsee][:agent_port]`: [Integer] Assigns the agent port for the DSCC
   instance, default is 3997.
-  
+
 * `node[:odsee][:registry_ldap_port]`: [Integer] Assigns the LDAP port for the
   DSCC registry instance, default is 3998.
-  
+
 * `node[:odsee][:registry_ldaps_port]`: [Integer] Assigns the LDAPS port for the
   DSCC registry instance, default is 3999.
 
-* `node[:odsee][:dn]`: [String] Default DN as Directory Manager DN, default 
+* `node[:odsee][:dn]`: [String] Default DN as Directory Manager DN, default
   value is `cn=Directory Manager`
- 
+
 * `node[:odsee][:suffix]`: [String] Suffix for the directory, default value is
   `dc=example,dc=com`.
 
@@ -232,19 +232,19 @@ General attributes can be found in the `default.rb` file.
 
 * `node[:odsee][:dsadm][:group_name]`: [String] Sets the server instance owner
   group ID. Default is `root`.
-   
+
 * `node[:odsee][:snmp_v3]`: [TrueClass, FalseClass] Boolean, true if SNMP
   version 3 should be used, otherwise false. Default is `false`.
 
 * `node[:odsee][:registry_path]`: [Proc] Path where the DSCC Registry will be
   installed, default is `/opt/dsee7/var/dcc/ads`.
-  
+
 * `node[:odsee][:agent_path]`: [Proc] Full path to the existing DSCC agent
   instance, default is `/opt/var/dcc/agent`.
 
 * `node[:odsee][:instance_path]`: [String] The Directory Server instance, the
   destination directory must be empty, default is `/opt/dsInst`.
-   
+
 * `node[:odsee][:safe_mode]`: [TrueClass, FalseClass] Boolean, when true starts
   Directory Server with the configuration used at the last successful startup,
   default is `false`.
@@ -282,11 +282,11 @@ This cookbook includes LWRPs for managing:
   * `Chef::Resource::Dsconf`: A Chef Resource and Provider that manages the
      Directory Server configuration. It enables you to modify the configuration
      entries in `cn=config`.
-  * `Chef::Resource::LdapEntry`: A Chef Resource to manage generic LDAP entries. 
+  * `Chef::Resource::LdapEntry`: A Chef Resource to manage generic LDAP entries.
     It makes use of the ruby net-ldap library, and can be used with any LDAP
     directory service.
   * `Chef::Resource::LdapUser`: A Chef Resource to create, manage or delete
-    LDAP user objects. 
+    LDAP user objects.
 
 ### dsadm
 
@@ -304,8 +304,8 @@ cookbook in-place of shelling out to run the `dsadm` CLI.
 
 You use the `dsadm` resource to manage a Directory Server instance as you
 would using the command line or with a shell script although as a native Chef
-Resource.     
-    
+Resource.
+
 #### Syntax
 
 The syntax for using the `dsadm` resource in a recipe is as follows:
@@ -374,7 +374,7 @@ For example:
 
 #### Examples
 
-The following examples demonstrate various approaches for using resources in 
+The following examples demonstrate various approaches for using resources in
 recipes. If you want to see examples of how Chef uses resources in recipes,
 take a closer look at some of the cookbooks in the [supermarket]
 (https://supermarket.chef.io/cookbooks?order=recently_updated)
@@ -403,7 +403,7 @@ cookbook in-place of shelling out to run the `dsccagent` CLI.
 
 You use the `dsccagent` resource to manage a Directory Server instance as you
 would using the command line or with a shell script although as a native Chef
-Resource.     
+Resource.
 
 #### Syntax
 
@@ -460,7 +460,7 @@ For example:
 
 #### Examples
 
-The following examples demonstrate various approaches for using resources in 
+The following examples demonstrate various approaches for using resources in
 recipes. If you want to see examples of how Chef uses resources in recipes,
 take a closer look at some of the cookbooks in the [supermarket]
 (https://supermarket.chef.io/cookbooks?order=recently_updated)
@@ -487,7 +487,7 @@ cookbook in-place of shelling out to run the `dsccreg` CLI.
 
 You use the `dsccreg` resource to manage a Directory Server instance as you
 would using the command line or with a shell script although as a native Chef
-Resource.     
+Resource.
 
 #### Syntax
 
@@ -516,7 +516,7 @@ For example:
     dsccreg '/opt/dsee7/var/dcc/agent' do
       action [:add_agent, :start]
     end
-    
+
 #### Actions:
 
   * `:add-agent`: Add a DSCC agent instance to the DSCC registry.
@@ -546,7 +546,7 @@ For example:
 
 #### Examples
 
-The following examples demonstrate various approaches for using resources in 
+The following examples demonstrate various approaches for using resources in
 recipes. If you want to see examples of how Chef uses resources in recipes,
 take a closer look at some of the cookbooks in the [supermarket]
 (https://supermarket.chef.io/cookbooks?order=recently_updated)
@@ -582,7 +582,7 @@ cookbook in-place of shelling out to run the `dsccsetup` CLI.
 
 You use the `dsccsetup` resource to manage a Directory Server instance as you
 would using the command line or with a shell script although as a native Chef
-Resource.     
+Resource.
 
 #### Syntax
 
@@ -614,7 +614,7 @@ For example:
 #### Actions:
 
   * `:ads_create`: Initialize a local Directory Server registry instance for
-    the DSCC to store configuration information. 
+    the DSCC to store configuration information.
   * `:ads_delete`: Delete the Directory Server registry instance.
 
 #### Attribute Parameters:
@@ -628,7 +628,7 @@ For example:
 
 #### Examples
 
-The following examples demonstrate various approaches for using resources in 
+The following examples demonstrate various approaches for using resources in
 recipes. If you want to see examples of how Chef uses resources in recipes,
 take a closer look at some of the cookbooks in the [supermarket]
 (https://supermarket.chef.io/cookbooks?order=recently_updated)
@@ -638,7 +638,7 @@ take a closer look at some of the cookbooks in the [supermarket]
     dsccsetup 'registry' do
       action :ads_create
     end
-    
+
 ##### Delete the local Directory Server registry instance
 
     dsccsetup 'registry' do
@@ -660,7 +660,7 @@ cookbook in-place of shelling out to run the `dsconf` CLI.
 
 You use the `dsconf` resource to manage a Directory Server instance as you
 would using the command line or with a shell script although as a native Chef
-Resource.     
+Resource.
 
 #### Syntax
 
@@ -693,7 +693,7 @@ For example:
 #### Actions:
 
   * `:create_suffix`: Creates a top level suffix entry in a LDAP DIT (Directory
-    Information Tree). 
+    Information Tree).
   * `:delete_suffix`: Deletes suffix configuration and data.
   * `:import`: Populates an existing suffix with LDIF data from a compressed
     or uncompressed LDIF file.
@@ -708,7 +708,7 @@ For example:
   * `db_path`: Specifies database directory and path.
   * `db_path`: Specifies database directory and path.
   * `accept_cert`: Specifies whether or not to receive confirmation before
-    accepting non-trusted server certificates. Default is `true`, and not 
+    accepting non-trusted server certificates. Default is `true`, and not
     require confirmation.
   * `no_top_entry`: Specifies if the `create_suffix` command should not create
     a top entry for the suffix. By default, a top-level entry is created when
@@ -735,7 +735,7 @@ For example:
   * Export flags, Hash of the following key/pairs:
     * `compression_level`: Compression level when `GZ_LDIF_FILE` is given as
       operand. Default is `3`, range is from 1 to 9.
-    * `multiple_output_file`: Boolean, when `true` each suffix is exported to 
+    * `multiple_output_file`: Boolean, when `true` each suffix is exported to
       separate file.
     * `use_main_db_file`: Boolean, `true` exports the main database file only.
     * `not_export_unique_id: [TrueClass, FalseClass]`: Boolean, true does not
@@ -769,7 +769,7 @@ For example:
 
 #### Examples
 
-The following examples demonstrate various approaches for using resources in 
+The following examples demonstrate various approaches for using resources in
 recipes. If you want to see examples of how Chef uses resources in recipes,
 take a closer look at some of the cookbooks in the [supermarket]
 (https://supermarket.chef.io/cookbooks?order=recently_updated)
@@ -820,10 +820,10 @@ For example:
       )
       action :create
     end
-   
+
 #### Actions:
 
-  * `:create`: Creates a new LDAP object or modifies and existing one. 
+  * `:create`: Creates a new LDAP object or modifies and existing one.
   * `:delete`: Deletes an LDAP object.
 
 #### Attribute Parameters:
@@ -847,7 +847,7 @@ For example:
 
 #### Examples
 
-The following examples demonstrate various approaches for using resources in 
+The following examples demonstrate various approaches for using resources in
 recipes. If you want to see examples of how Chef uses resources in recipes,
 take a closer look at some of the cookbooks in the [supermarket]
 (https://supermarket.chef.io/cookbooks?order=recently_updated)
@@ -906,7 +906,7 @@ For example:
 
 #### Actions:
 
-  * `:create`: Creates a new user object or modifies and existing one. 
+  * `:create`: Creates a new user object or modifies and existing one.
   * `:delete`: Deletes an user from the directory server.
 
 #### Attribute Parameters:
@@ -936,7 +936,7 @@ For example:
 
 #### Examples
 
-The following examples demonstrate various approaches for using resources in 
+The following examples demonstrate various approaches for using resources in
 recipes. If you want to see examples of how Chef uses resources in recipes,
 take a closer look at some of the cookbooks in the [supermarket]
 (https://supermarket.chef.io/cookbooks?order=recently_updated)

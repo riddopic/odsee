@@ -21,7 +21,7 @@
 #
 
 #       T H I S   I S   A   E X A M P L E   R E C I P E   F O R
-#       D E M O N S T R A T I O N   P U R P O S E S   O N L Y
+#       D E M O N S T R A T I O N   P U R P O S E S   O N L Y !
 
 single_include 'odsee::default'
 
