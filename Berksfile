@@ -6,11 +6,9 @@ metadata
 
 group :integration do
   cookbook 'test_fixtures', path: 'test/fixtures/cookbooks/test_fixtures'
-  cookbook 'sudo',      '~> 2.7.1'
+  cookbook 'sudo',          '>= 2.7.1'
   cookbook 'os-hardening',  '>= 1.2.0'
   cookbook 'ssh-hardening', '>= 1.0.3'
 end
 
-# cookbook 'garcon', git: 'http://github.com/riddopic/garcon.git'
-
-cookbook 'garcon', path: '/Users/sharding/git/cookbooks/garcon'
+cookbook 'garcon', git: 'https://github.com/riddopic/garcon.git'
