@@ -25,6 +25,7 @@ group :development do
   gem 'ruby_gntp'
 end
 
+gem 'kitchen-sync'
 gem 'test-kitchen'
 gem 'kitchen-ec2'
 gem 'kitchen-vagrant'

@@ -1100,8 +1100,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-- - -
-
+```
+ .-.     .-.     .-.     .-.     .-.    .-.   .-.   .-.   .-.   .-.   .-.   .-.
+Digit\al Pres\ence Gr\oup Aut\omation\ ( * ) ( : ) ('*.) (: :) (:-:) (:::) ((-))
+'     `-'     `-'     `-'     `-'     ` `-'   `-'   `-'   `-'   `-'   `-'   `-'
+```
 [Berkshelf]: http://berkshelf.com "Berkshelf"
 [Chef]: https://www.getchef.com "Chef"
 [ChefDK]: https://www.getchef.com/downloads/chef-dk "Chef Development Kit"

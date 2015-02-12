@@ -106,6 +106,7 @@ class Chef::Provider::Dsccsetup < Chef::Provider::LWRPBase
                     new_resource._?(:registry_ldaps_port, '-P')
           lock.exit
         end
+        new_resource.updated_by_last_action(true)
         Chef::Log.info "DSCC registry initialized for #{new_resource}"
       end
     end
@@ -132,6 +133,7 @@ class Chef::Provider::Dsccsetup < Chef::Provider::LWRPBase
         dsccsetup :ads_delete, new_resource._?(:no_inter, '-i')
         Chef::Log.info "DSCC registry deleted for #{new_resource}"
       end
+      new_resource.updated_by_last_action(true)
     else
       Chef::Log.info "#{new_resource} does not exists - nothing to do"
     end
