@@ -52,7 +52,7 @@ module Odsee
       if Pathname.new(cmd).absolute?
         ::File.executable?(cmd) ? cmd : nil
       else
-        paths = %w(/bin /usr/bin /sbin /usr/sbin)
+        paths  = %w(/bin /usr/bin /sbin /usr/sbin)
         paths << ::File.join(node[:odsee][:install_dir], 'dsee7/bin')
         paths << ::File.join(node[:odsee][:install_dir], 'dsee7/dsrk/bin')
         paths << ENV.fetch('PATH').split(::File::PATH_SEPARATOR)

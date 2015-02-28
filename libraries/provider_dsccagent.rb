@@ -94,16 +94,15 @@ class Chef::Provider::Dsccagent < Chef::Provider::LWRPBase
   # @api public
   def action_create
     if @current_resource.created
-      Chef::Log.info "#{new_resource} already created - nothing to do"
+      Chef::Log.debug "#{new_resource.path} already created - nothing to do"
     else
-      converge_by 'Creating the DSCC agent instance' do
+      converge_by "Create DSCC instance at #{new_resource.path}" do
         new_resource.agent_passwd.tmp do |__p__|
           dsccagent :create,
                     new_resource._?(:no_inter,     '-i'),
                     new_resource._?(:agent_port,   '-p'),
                     new_resource._?(:agent_passwd, '-w'),
                     new_resource.path
-          Chef::Log.info "DSCC agent instance initialized for #{new_resource}"
         end
         new_resource.updated_by_last_action(true)
       end
@@ -122,13 +121,12 @@ class Chef::Provider::Dsccagent < Chef::Provider::LWRPBase
   # @api public
   def action_delete
     if @current_resource.created
-      converge_by "Deleting the DSCC agent instance for #{new_resource}" do
+      converge_by "Delete DSCC instance at #{new_resource.path}" do
         dsccagent :delete, new_resource.path
-        Chef::Log.info "DSCC agent instance deleted for #{new_resource}"
       end
       new_resource.updated_by_last_action(true)
     else
-      Chef::Log.info "#{new_resource} does not exists - nothing to do"
+      Chef::Log.debug "#{new_resource} does not exists - nothing to do"
     end
     load_new_resource_state
     @new_resource.created(false)
@@ -150,9 +148,9 @@ class Chef::Provider::Dsccagent < Chef::Provider::LWRPBase
   # @api public
   def action_enable_snmp
     if @current_resource.enabled
-      Chef::Log.info "#{new_resource} already configured - nothing to do"
+      Chef::Log.debug "#{new_resource} already configured - nothing to do"
     else
-      converge_by 'Configure the SNMP agent for DSCC agent instance' do
+      converge_by "Configure SNMP for DSCC instance #{new_resource.path}" do
         dsccagent :enable_snmp,
                   new_resource._?(:snmp_v3,           '-v3'),
                   new_resource._?(:snmp_port, '--snmp-port'),
@@ -176,13 +174,12 @@ class Chef::Provider::Dsccagent < Chef::Provider::LWRPBase
   # @api public
   def action_disable_snmp
     if @current_resource.enabled
-      converge_by "Unconfigure the SNMP agent for #{new_resource}" do
+      converge_by "Unconfigure SNMP for DSCC instance #{new_resource.path}" do
         dsccagent :disable_snmp, new_resource.path
-        Chef::Log.info "SNMP agent is unconfigured for #{new_resource}"
       end
       new_resource.updated_by_last_action(true)
     else
-      Chef::Log.info "#{new_resource} not configured - nothing to do"
+      Chef::Log.debug "#{new_resource} not configured - nothing to do"
     end
     load_new_resource_state
     @new_resource.enabled(false)
@@ -199,11 +196,10 @@ class Chef::Provider::Dsccagent < Chef::Provider::LWRPBase
   # @api public
   def action_start
     if @current_resource.running
-      Chef::Log.info "#{new_resource} is running - nothing to do"
+      Chef::Log.debug "#{new_resource} is running - nothing to do"
     else
-      converge_by "Starting the DSCC agent instance for #{new_resource}" do
+      converge_by "Start DSCC agent instance at #{new_resource.path}" do
         dsccagent :start, new_resource.path
-        Chef::Log.info "DSCC agent instance started for #{new_resource}"
       end
       new_resource.updated_by_last_action(true)
     end
@@ -221,13 +217,12 @@ class Chef::Provider::Dsccagent < Chef::Provider::LWRPBase
   # @api public
   def action_stop
     if @current_resource.running
-      converge_by "Stopping the DSCC agent instance for #{new_resource}" do
+      converge_by "Stop DSCC agent instance at #{new_resource.path}" do
         dsccagent :stop, new_resource.path
-        Chef::Log.info "DSCC agent instance for #{new_resource} is stopped"
       end
       new_resource.updated_by_last_action(true)
     else
-      Chef::Log.info "#{new_resource} is stopped - nothing to do"
+      Chef::Log.debug "#{new_resource} is stopped - nothing to do"
     end
     load_new_resource_state
     @new_resource.running(false)

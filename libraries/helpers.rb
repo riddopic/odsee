@@ -23,30 +23,67 @@
 require 'openssl'
 require 'base64'
 require 'securerandom'
+require 'tempfile'
 
 module Odsee
   # A set of helper methods shared by all resources and providers.
   #
   module Helpers
-    # Returns a salted PBKDF2 hash of the password.
+    # Salts your password with a side of hash.
     #
     def pwd_hash(password)
       salt = SecureRandom.base64(24)
       pbkdf2 = OpenSSL::PKCS5.pbkdf2_hmac_sha1(password, salt, 1000, 24)
       Base64.encode64(pbkdf2)
     end
+
+    # Throws water in the face of a lazy attribute, returns the unlazy value,
+    # good for nothing long-haird pot-smoking hippy.
+    #
+    # @param [Chef::DelayedEvaluator, Proc] var
+    # @return [String]
+    # @api private
+    def lazy_eval(var)
+      if var && var.is_a?(Chef::DelayedEvaluator)
+        var = var.dup
+        var = instance_eval(&var.call)
+      end
+      var
+    rescue
+      var.call
+    end
+
+    # Creates a temp directory executing the block provided. When done the
+    # temp directory and all it's contents are garbage collected.
+    #
+    # @param block [Block]
+    #
+    # @api public
+    def with_tmp_dir(&block)
+      Dir.mktmpdir do |tmp_dir|
+        Dir.chdir(tmp_dir, &block)
+      end
+    end
+
+    # Shorter way to return the file_cache_path path
+    #
+    # @return [String]
+    # @api private
+    def file_cache_path
+      Chef::Config[:file_cache_path]
+    end
   end
 
   # Generic Namespace for custom error errors and exceptions for the Cookbook
   #
   module Exceptions
-    class UnsupportedAction < RuntimeError; end
-    class ValidationError < RuntimeError; end
+    class UnsupportedAction   < RuntimeError; end
+    class ValidationError     < RuntimeError; end
     class InvalidRegistryType < RuntimeError; end
-    class InvalidStateType < RuntimeError; end
-    class ResourceNotFound < RuntimeError; end
+    class InvalidStateType    < RuntimeError; end
+    class ResourceNotFound    < RuntimeError; end
     class AuthenticationError < RuntimeError; end
-    class LDAPBindError < RuntimeError; end
+    class LDAPBindError       < RuntimeError; end
 
     # A custom exception class for registry methods
     #

@@ -108,9 +108,9 @@ class Chef::Provider::Dsconf < Chef::Provider::LWRPBase
   # @api public
   def action_create_suffix
     if @current_resource.created
-      Chef::Log.info "#{new_resource} already created - nothing to do"
+      Chef::Log.debug "#{new_resource} already created - nothing to do"
     else
-      converge_by "Creating #{new_resource} suffix entry in the DIT" do
+      converge_by "Create suffix entry #{new_resource.suffix}" do
         new_resource.admin_passwd.tmp do |__p__|
           dsconf :create_suffix,
                  new_resource._?(:hostname,     '-h'),
@@ -121,7 +121,6 @@ class Chef::Provider::Dsconf < Chef::Provider::LWRPBase
                  new_resource._?(:no_top_entry, '-N'),
                  new_resource._?(:admin_passwd, '-w'),
                  new_resource.suffix
-          Chef::Log.info "DIT entry created for #{new_resource} suffix"
         end
         new_resource.updated_by_last_action(true)
       end
@@ -146,16 +145,15 @@ class Chef::Provider::Dsconf < Chef::Provider::LWRPBase
   # @api public
   def action_delete_suffix
     if @current_resource.created
-      converge_by "Deleting #{new_resource} suffix entry from the DIT" do
+      converge_by "Remove suffix entry #{new_resource.suffix}" do
         dsconf :delete_suffix,
                new_resource._?(:hostname,  '-h'),
                new_resource._?(:ldap_port, '-p'),
                new_resource.suffix
-        Chef::Log.info "DIT entry deleted for #{new_resource} suffix"
       end
       new_resource.updated_by_last_action(true)
     else
-      Chef::Log.info "#{new_resource} does not exists - nothing to do"
+      Chef::Log.debug "#{new_resource} does not exists - nothing to do"
     end
     load_new_resource_state
     @current_resource.created(false)
@@ -244,7 +242,7 @@ class Chef::Provider::Dsconf < Chef::Provider::LWRPBase
   # @api public
   def action_import
     if @current_resource.empty
-      converge_by "Populating #{new_resource.suffix} with LDIF content from " \
+      converge_by "Populate #{new_resource.suffix} with LDIF content from " \
                   "#{new_resource.ldif_file}" do
         new_resource.admin_passwd.tmp do |__p__|
           dsconf :import,
@@ -257,12 +255,11 @@ class Chef::Provider::Dsconf < Chef::Provider::LWRPBase
                  new_resource._?(:admin_passwd, '-w'),
                  new_resource.ldif_file,
                  new_resource.suffix
-          Chef::Log.info "#{new_resource.suffix} has been populated."
         end
       end
       new_resource.updated_by_last_action(true)
     else
-      Chef::Log.info "#{new_resource.suffix} already populated - nothing to do"
+      Chef::Log.debug "#{new_resource.suffix} already populated - nothing to do"
     end
     load_new_resource_state
     @new_resource.empty(false)

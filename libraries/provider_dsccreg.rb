@@ -88,9 +88,9 @@ class Chef::Provider::Dsccreg < Chef::Provider::LWRPBase
   # @api public
   def action_add_agent
     if @current_resource.agents
-      Chef::Log.info "#{new_resource} already created - nothing to do"
+      Chef::Log.debug "#{new_resource} already created - nothing to do"
     else
-      converge_by "Adding #{new_resource} instance to the DSCC registry" do
+      converge_by "Add instance #{new_resource.path} to DSCC registry" do
         new_resource.admin_passwd.tmp do |__p__|
           new_resource.agent_passwd.tmp do |__p__|
             dsccreg :add_agent,
@@ -99,7 +99,6 @@ class Chef::Provider::Dsccreg < Chef::Provider::LWRPBase
                     new_resource._?(:agent_passwd, '-G'),
                     new_resource._?(:admin_passwd, '-w'),
                     new_resource.path
-            Chef::Log.info 'DSCC agent instance added to the DSCC registry'
           end
         end
         new_resource.updated_by_last_action(true)
@@ -124,16 +123,15 @@ class Chef::Provider::Dsccreg < Chef::Provider::LWRPBase
   # @api public
   def action_remove_agent
     if @current_resource.agents
-      converge_by "Remove #{new_resource} instance from the registry" do
+      converge_by "Remove instance #{new_resource.path} from DSCC registry" do
         dsccreg :remove_agent,
                 new_resource._?(:hostname, '-H'),
                 new_resource._?(:force,    '-f'),
                 new_resource.path
-        Chef::Log.info "#{new_resource} has been removed from the registry."
       end
       new_resource.updated_by_last_action(true)
     else
-      Chef::Log.info "#{new_resource} does not exists - nothing to do"
+      Chef::Log.debug "#{new_resource} does not exists - nothing to do"
     end
     load_new_resource_state
     @current_resource.agents(check_for(:agents, @new_resource.path))
@@ -161,9 +159,9 @@ class Chef::Provider::Dsccreg < Chef::Provider::LWRPBase
   # @api public
   def action_add_server
     if @current_resource.servers
-      Chef::Log.info "#{new_resource} already created - nothing to do"
+      Chef::Log.debug "#{new_resource} already created - nothing to do"
     else
-      converge_by "Adding server instance #{new_resource} to the registry" do
+      converge_by "Add server instance #{new_resource.path} to DSCC registry" do
         new_resource.admin_passwd.tmp do |__p__|
           new_resource.agent_passwd.tmp do |__p__|
             dsccreg :add_server,
@@ -171,7 +169,6 @@ class Chef::Provider::Dsccreg < Chef::Provider::LWRPBase
                     new_resource._?(:agent_passwd, '-G'),
                     new_resource._?(:no_inter,     '-i'),
                     new_resource.path
-            Chef::Log.info 'Server instance added to the DSCC registry'
           end
         end
         new_resource.updated_by_last_action(true)
@@ -198,17 +195,18 @@ class Chef::Provider::Dsccreg < Chef::Provider::LWRPBase
   # @api public
   def action_remove_server
     if @current_resource.servers
-      converge_by "Removing server instance #{new_resource} from registry" do
+      converge_by "Remove server instance #{new_resource.path} to DSCC registry" do
         new_resource.admin_passwd.tmp do |__p__|
           dsccreg :remove_server,
                   new_resource._?(:dn,           '-B'),
                   new_resource._?(:admin_passwd, '-G'),
                   new_resource._?(:hostname,     '-H'),
                   new_resource.path
-          Chef::Log.info "Server instance #{new_resource} has been removed."
         end
         new_resource.updated_by_last_action(true)
       end
+    else
+      Chef::Log.debug "#{new_resource} does not exists - nothing to do"
     end
     load_new_resource_state
     @current_resource.servers(check_for(:servers, @new_resource.path))

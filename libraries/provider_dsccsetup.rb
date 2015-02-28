@@ -94,9 +94,9 @@ class Chef::Provider::Dsccsetup < Chef::Provider::LWRPBase
   # @api public
   def action_ads_create
     if @current_resource.created
-      Chef::Log.info "#{new_resource} already exists - nothing to do"
+      Chef::Log.debug "#{new_resource} already exists - nothing to do"
     else
-      converge_by "Initialize DSCC registry for #{new_resource}" do
+      converge_by "Initialize DSCC registry #{new_resource}" do
         new_resource.admin_passwd.tmp do |__p__|
           lock.enter
           do_prerequisite
@@ -107,7 +107,6 @@ class Chef::Provider::Dsccsetup < Chef::Provider::LWRPBase
           lock.exit
         end
         new_resource.updated_by_last_action(true)
-        Chef::Log.info "DSCC registry initialized for #{new_resource}"
       end
     end
     load_new_resource_state
@@ -129,13 +128,12 @@ class Chef::Provider::Dsccsetup < Chef::Provider::LWRPBase
   # @api public
   def action_ads_delete
     if @current_resource.created
-      converge_by "Deleting DSCC registry for #{new_resource}" do
+      converge_by "Remove DSCC registry #{new_resource}" do
         dsccsetup :ads_delete, new_resource._?(:no_inter, '-i')
-        Chef::Log.info "DSCC registry deleted for #{new_resource}"
       end
       new_resource.updated_by_last_action(true)
     else
-      Chef::Log.info "#{new_resource} does not exists - nothing to do"
+      Chef::Log.debug "#{new_resource} does not exists - nothing to do"
     end
     load_new_resource_state
     @new_resource.created(false)
@@ -143,20 +141,19 @@ class Chef::Provider::Dsccsetup < Chef::Provider::LWRPBase
 
   private #   P R O P R I E T À   P R I V A T A   Vietato L'accesso
 
+  # Catch any missing prerequisite Packages
+  #
+  # @return [undefined]
   # @api private
   def do_prerequisite
     lock.synchronize do
-      %w(gtk2-engines).each do |pkg|
+      %w[gtk2-engines gtk2 libgcc glibc].each do |pkg|
         package(pkg) { action :nothing }.run_action(:install)
       end
 
-      %w(gtk2 libgcc glibc).each do |pkg|
-        %w(x86_64 i686).each do |arch|
-          yum_package pkg do
-            arch arch
-            action :nothing
-          end.run_action(:install)
-        end
+      %w[gtk2-engines.i686 gtk2.i686 libgcc.i686 glibc.i686 libXtst.i686
+         libcanberra-gtk2.i686 PackageKit-gtk-module.i686].each do |pkg|
+        package(pkg) { action :nothing }.run_action(:install)
       end
     end
   end

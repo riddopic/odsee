@@ -63,11 +63,10 @@ class Chef::Provider::LdapEntry < Chef::Provider::LWRPBase
   # @api public
   def action_create
     if @new_resource.created
-      Chef::Log.info "#{new_resource.dn} already created - nothing to do"
+      Chef::Log.debug "#{new_resource.dn} already created - nothing to do"
     else
-      converge_by "Creating #{new_resource.dn} entry in directory" do
-
-        Chef::Log.info "Entry created for #{new_resource.dn}"
+      converge_by "Create #{new_resource.dn} entry" do
+        # code...
       end
       new_resource.updated_by_last_action(true)
     end
@@ -78,13 +77,12 @@ class Chef::Provider::LdapEntry < Chef::Provider::LWRPBase
   # @api public
   def action_delete
     if @new_resource.created
-      converge_by "Deleting #{new_resource.dn} entry from directory" do
-
-        Chef::Log.info "Entry #{new_resource.dn} deleted"
+      converge_by "Delete #{new_resource.dn} entry" do
+        # code...
       end
       new_resource.updated_by_last_action(true)
     else
-      Chef::Log.info "#{new_resource.dn} already deleted - nothing to do"
+      Chef::Log.debug "#{new_resource.dn} already deleted - nothing to do"
     end
     load_new_resource_state
     @current_resource.created(false)
