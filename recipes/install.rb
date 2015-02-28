@@ -20,35 +20,42 @@
 # limitations under the License.
 #
 
-chef_gem('net-ldap')  { action :nothing }.run_action(:install)
-require 'net/ldap' unless defined?(Net::LDAP)
-
 single_include 'garcon::default'
 
-concurrent 'Odsee::Install' do
+concurrent 'ODSEE Prerequisite Packages' do
   block do
     monitor.synchronize do
-      %w(gtk2-engines).each do |pkg|
+      %w[gtk2-engines gtk2 libgcc glibc].each do |pkg|
         package pkg
       end
 
-      %w(gtk2 libgcc glibc).each do |pkg|
-        %w(x86_64 i686).each do |arch|
-          yum_package pkg do
-            arch arch
-          end
-        end
+      %w[gtk2-engines.i686 gtk2.i686 libgcc.i686 glibc.i686 libXtst.i686
+         libcanberra-gtk2.i686 PackageKit-gtk-module.i686].each do |pkg|
+        package pkg
       end
     end
   end
 end
 
-zip_file node[:odsee][:install_dir] do
-  checksum node[:odsee][:source][:checksum]
-  source node[:odsee][:source][:filename]
-  overwrite true
-  remove_after true
-  not_if { ::File.directory?(node[:odsee][:registry_path].call) }
-  not_if { ::File.directory?(node[:odsee][:agent_path].call) }
-  action :unzip
+with_tmp_dir do |tmp_dir|
+  zip_file tmp_dir do
+    source       uri_join(node[:odsee][:pkg][:url], node[:odsee][:pkg][:name])
+    checksum     node[:odsee][:pkg][:checksum]
+    overwrite    true
+    remove_after true
+    not_if   { ::File.directory?(node[:odsee][:registry_path].call) }
+    not_if   { ::File.directory?(node[:odsee][:agent_path].call)    }
+    notifies    :unzip, 'zip_file[inner_zip]', :immediately
+    action      :unzip
+  end
+  #              Zip within-a-zip file distribution pattern.
+  #              Brought to you by Oracle Engineering Special-Ed.
+  #
+  zip_file :inner_zip do
+    source     ::File.join(tmp_dir, 'ODSEE_ZIP_Distribution', 'sun-dsee7.zip')
+    path         node[:odsee][:install_dir]
+    overwrite    true
+    remove_after true
+    action      :nothing
+  end
 end

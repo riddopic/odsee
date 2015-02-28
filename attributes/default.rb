@@ -21,9 +21,10 @@
 #
 
 # location where the sorce ZIP file distribution can be found.
-default[:odsee][:source] = {
-  filename: 'http://repo.mudbox.dev/oracle/oiam11g/sun-dsee7.zip',
-  checksum: 'bd8451c8fa493206f79d0cf9141c1c15ed202f9288084208363a98de15b51137'
+default[:odsee][:pkg] = {
+  name:     'ofm_odsee_linux_11.1.1.7.0_64_disk1_1of1.zip',
+  url:      'http://download.oracle.com/otn/linux/middleware/11g/111170',
+  checksum: '6a04b778a32fb79c157d38206a63e66418c8c7fe381371e7a74fe9dc1ee788fa'
 }
 
 # Path under which Directory Server is installed.
