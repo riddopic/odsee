@@ -23,7 +23,15 @@
 # location where the sorce ZIP file distribution can be found.
 default[:odsee][:pkg] = {
   name:     'ofm_odsee_linux_11.1.1.7.0_64_disk1_1of1.zip',
-  url:      'http://download.oracle.com/otn/linux/middleware/11g/111170',
+  # Keeping cookbooks as generic as possible ensures you do not inadvertently
+  # lock yourself into a specific environment, as such it is common and
+  # considered to be correct to write cookbooks with no company or domain
+  # specific information within them. Chef roles are specifically designed to
+  # allow easy overriding of attributes to match your specific requirements.
+  # This also has the benefit of avoiding the possibility of having a cookbook
+  # with sensitive data being exposed.
+  # url:    'http://download.oracle.com/otn/linux/middleware/11g/111170',
+  url:      'http://10.8.132.23/oracle/oiam11g',
   checksum: '6a04b778a32fb79c157d38206a63e66418c8c7fe381371e7a74fe9dc1ee788fa'
 }
 
