@@ -13,5 +13,5 @@ AllCops:
     - vendor/**/*
     - debug_shell.rb
 
-LineLength:
-  Enabled: false
+inherit_from: test/support/rubocop/enabled.yml
+inherit_from: test/support/rubocop/disabled.yml
