@@ -1,7 +1,6 @@
 DEPENDENCIES
   garcon
-    git: https://github.com/riddopic/garcon.git
-    revision: 7d2318ec7ef43e8a4594d9254d43e02ec8a6d888
+    path: ../garcon
   odsee
     path: .
     metadata: true
@@ -15,13 +14,13 @@ GRAPH
   apt (2.6.1)
   build-essential (2.1.3)
   chef_handler (1.1.6)
-  garcon (0.8.3)
+  garcon (0.8.5)
     build-essential (>= 2.1.3)
     chef_handler (>= 1.1.6)
     yum (>= 3.5.1)
-  odsee (0.1.0)
-    chef_handler (>= 1.1.6)
-    garcon (~> 0.8.3)
+  odsee (0.2.1)
+    chef_handler (~> 1.1.6)
+    garcon (~> 0.8.5)
   ohai (2.0.1)
   os-hardening (1.2.0)
     apt (>= 0.0.0)
@@ -34,4 +33,4 @@ GRAPH
   test_fixtures (0.1.0)
     chef_handler (>= 0.0.0)
     garcon (>= 0.0.0)
-  yum (3.5.2)
+  yum (3.5.3)

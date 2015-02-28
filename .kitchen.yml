@@ -15,23 +15,23 @@ platforms:
       box_url: http://opscode-vm-bento.s3.amazonaws.com/vagrant/virtualbox/opscode_centos-6.6_chef-provisionerless.box
 
 suites:
-  - name: default
-    run_list:
-      - recipe[test_fixtures::default]
-      - recipe[odsee::install]
-      - recipe[odsee::example]
+- name: default
+  run_list:
+    - recipe[test_fixtures::default]
+    - recipe[odsee::install]
+    - recipe[odsee::example]
 
-  - name: hardened
-    run_list:
-      - recipe[test_fixtures::default]
-      - recipe[os-hardening::packages]
-      - recipe[os-hardening::limits]
-      - recipe[os-hardening::login_defs]
-      - recipe[os-hardening::minimize_access]
-      - recipe[os-hardening::pam]
-      - recipe[os-hardening::profile]
-      - recipe[os-hardening::securetty]
-      - recipe[os-hardening::suid_sgid]
-      - recipe[ssh-hardening::default]
-      - recipe[odsee::install]
-      - recipe[odsee::example]
+- name: hardened
+  run_list:
+    - recipe[test_fixtures::default]
+    - recipe[os-hardening::packages]
+    - recipe[os-hardening::limits]
+    - recipe[os-hardening::login_defs]
+    - recipe[os-hardening::minimize_access]
+    - recipe[os-hardening::pam]
+    - recipe[os-hardening::profile]
+    - recipe[os-hardening::securetty]
+    - recipe[os-hardening::suid_sgid]
+    - recipe[ssh-hardening::default]
+    - recipe[odsee::install]
+    - recipe[odsee::example]
