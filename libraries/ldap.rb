@@ -66,6 +66,9 @@ module Odsee
     #
     # @api public
     def initialize(options = {})
+      chef_gem 'net-ldap'
+      Chef::Recipe.send(:require, 'net/ldap')
+
       @host = options.fetch(:host, 'localhost')
       @port = options.fetch(:port, 389)
       @auth = options.fetch(:auth, method: :anonymous)
@@ -76,7 +79,6 @@ module Odsee
         fail LDAPBindError.new ldap.get_operation_result.message
       end
     end
-
 
     def find(id)
       filter = Net::LDAP::Filter.eq("cn", "user1")
@@ -91,8 +93,6 @@ module Odsee
           end
       end
     end
-
-
 
     # Bind to the LDAP directory server and returns a Odsee::LDAP connection
     # object using the supplied authentication credentials
