@@ -43,8 +43,9 @@ with_tmp_dir do |tmp_dir|
     checksum     node[:odsee][:pkg][:checksum]
     overwrite    true
     remove_after true
-    not_if   { ::File.directory?(node[:odsee][:registry_path].call) }
-    not_if   { ::File.directory?(node[:odsee][:agent_path].call)    }
+    header      'Cookie: oraclelicense=accept-securebackup-cookie'
+    not_if   { ::File.directory?(node[:odsee][:registry_path]) }
+    not_if   { ::File.directory?(node[:odsee][:agent_path])    }
     notifies    :unzip, 'zip_file[inner_zip]', :immediately
     action      :unzip
   end

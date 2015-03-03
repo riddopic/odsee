@@ -37,22 +37,6 @@ module Odsee
       Base64.encode64(pbkdf2)
     end
 
-    # Throws water in the face of a lazy attribute, returns the unlazy value,
-    # good for nothing long-haird pot-smoking hippy.
-    #
-    # @param [Chef::DelayedEvaluator, Proc] var
-    # @return [String]
-    # @api private
-    def lazy_eval(var)
-      if var && var.is_a?(Chef::DelayedEvaluator)
-        var = var.dup
-        var = instance_eval(&var.call)
-      end
-      var
-    rescue
-      var.call
-    end
-
     # Creates a temp directory executing the block provided. When done the
     # temp directory and all it's contents are garbage collected.
     #

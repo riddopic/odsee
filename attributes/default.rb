@@ -37,6 +37,21 @@ default[:odsee][:pkg] = {
 
 # Path under which Directory Server is installed.
 default[:odsee][:install_dir] = '/opt'
+default[:odsee][:dir] = '/opt'
+
+# Path of the DSCC Registry.
+default[:odsee][:registry_path] = "%{node[:odsee][:dir]}/dsee7/var/dcc/ads"
+
+# Full path to the existing DSCC agent instance. The default path is to use:
+# install-path/var/dcc/agent
+default[:odsee][:agent_path] = "%{node[:odsee][:dir]}/dsee7/var/dcc/agent"
+
+# Creates the Directory Server instance in an existing directory, specified by
+# the `instance_path`. The existing directory must be empty. On UNIX machines,
+# the user who runs this command must be root, or must be the owner of the
+# existing directory. If the user is root, the instance will be owned by the
+# owner of the existing directory.
+default[:odsee][:instance_path] = '/opt/dsInst'
 
 # Password assigned to the Directory Service Manager, if none is provided one
 # will be randomly generate and assigned to the `node[:odsee][:admin_passwd]`
@@ -97,24 +112,6 @@ default[:odsee][:dsadm][:group_name] = 'root'
 
 # Boolean, true if SNMP version 3 should be used, otherwise false.
 default[:odsee][:snmp_v3] = false
-
-# Path of the DSCC Registry.
-default[:odsee][:registry_path] = ->do
-  ::File.join(node[:odsee][:install_dir], 'dsee7/var/dcc/ads')
-end
-
-# Full path to the existing DSCC agent instance. The default path is to use:
-# install-path/var/dcc/agent
-default[:odsee][:agent_path] = ->do
-  ::File.join(node[:odsee][:install_dir], 'dsee7/var/dcc/agent')
-end
-
-# Creates the Directory Server instance in an existing directory, specified by
-# the `instance_path`. The existing directory must be empty. On UNIX machines,
-# the user who runs this command must be root, or must be the owner of the
-# existing directory. If the user is root, the instance will be owned by the
-# owner of the existing directory.
-default[:odsee][:instance_path] = '/opt/dsInst'
 
 # When true starts Directory Server with the configuration used at the last
 # successful startup.

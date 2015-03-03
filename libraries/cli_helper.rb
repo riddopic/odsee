@@ -24,23 +24,6 @@ module Odsee
   # Instance methods that are added when you include Odsee::CliHelpers
   #
   module CliHelpers
-    # Returns a hash using col1 as keys and col2 as values.
-    #
-    # @example zip_hash([:name, :age, :sex], ['Earl', 30, 'male'])
-    #   => { :age => 30, :name => "Earl", :sex => "male" }
-    #
-    # @param [Array] col1
-    #   Containing the keys.
-    # @param [Array] col2
-    #   Values for hash.
-    #
-    # @return [Hash]
-    #
-    # @api public
-    def zip_hash(col1, col2)
-      col1.zip(col2).inject({}) { |r, i| r[i[0]] = i[1]; r }
-    end
-
     # Finds a command in $PATH
     #
     # @param [String] cmd
@@ -200,7 +183,9 @@ module Odsee
           shell_out!(cmd).stdout.split("\n").reverse
         end
         keys = lines.pop.split(' ').map { |line| line.downcase.to_sym }
-        lines.delete_if { |l| l =~ /^--|(instance|agent)\(s\)\s(found|display)/ }
+        lines.delete_if do |line|
+          line =~ /^--|(instance|agent)\(s\)\s(found|display)/
+        end
         lines.map { |line| zip_hash(keys, line.split(' ')) }[0]
       end
     end
@@ -225,57 +210,6 @@ module Odsee
       else
         fail InvalidRegistryType.new "Unknown instance type `#{instance}`; " \
           'only `:agents` or `:servers` instances are supported'
-      end
-    end
-
-    # Runs a code block, and retries it when an exception occurs. Should the
-    # number of retries be reached without success, the last exception will be
-    # raised.
-    #
-    # @param opts [Hash{Symbol => Value}]
-    # @option opts [Fixnum] :tries
-    #   number of attempts to retry before raising the last exception
-    # @option opts [Fixnum] :sleep
-    #   number of seconds to wait between retries, use lambda to exponentially
-    #   increasing delay between retries
-    # @option opts [Array(Exception)] :on
-    #   the type of exception(s) to catch and retry on
-    # @option opts [Regex] :matching
-    #   match based on the exception message
-    # @option opts [Block] :ensure
-    #   ensure a block of code is executed, regardless of whether an exception
-    #   is raised
-    #
-    # @return [Block]
-    #
-    # @api public
-    def retrier(options = {}, &_block)
-      tries  = options.fetch(:tries, 4)
-      wait   = options.fetch(:sleep, 1)
-      on     = options.fetch(:on, StandardError)
-      match  = options.fetch(:match, /.*/)
-      insure = options.fetch(:insure, proc {})
-
-      retries = 0
-      retry_exception = nil
-
-      begin
-        yield retries, retry_exception
-      rescue *[on] => exception
-        raise unless exception.message =~ match
-        raise if retries + 1 >= tries
-
-        # Interrupt Exception could be raised while sleeping
-        begin
-          sleep wait.respond_to?(:call) ? wait.call(retries) : wait
-        rescue *[on]
-        end
-
-        retries += 1
-        retry_exception = exception
-        retry
-      ensure
-        insure.call(retries)
       end
     end
 

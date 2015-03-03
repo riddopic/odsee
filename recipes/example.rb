@@ -53,15 +53,15 @@ dsccsetup :create do
   action :ads_create
 end
 
-dsccagent node[:odsee][:agent_path].call do
+dsccagent node[:odsee][:agent_path] do
   action :create
 end
 
-dsccreg node[:odsee][:agent_path].call do
+dsccreg node[:odsee][:agent_path] do
   action :add_agent
 end
 
-dsccagent node[:odsee][:agent_path].call do
+dsccagent node[:odsee][:agent_path] do
   action :start
 end
 
