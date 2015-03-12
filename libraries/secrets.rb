@@ -41,8 +41,9 @@ module Odsee
     #
     # @api private
     def admin_passwd(arg = nil)
-      set_or_return :admin_passwd, arg, kind_of: [Odsee::Secrets, String],
-        default: Odsee::Secrets.new(node[:odsee][:admin_password]).freeze
+      set_or_return :admin_passwd, arg,
+        kind_of: [Odsee::Secrets, String],
+        default:  Odsee::Secrets.new(node[:odsee][:admin_password]).freeze
     end
 
     # A file containing the DSCC agent password.
@@ -54,8 +55,9 @@ module Odsee
     #
     # @api private
     def agent_passwd(arg = nil)
-      set_or_return :agent_passwd, arg, kind_of: [Odsee::Secrets, String],
-        default: Odsee::Secrets.new(node[:odsee][:agent_password]).freeze
+      set_or_return :agent_passwd, arg,
+        kind_of: [Odsee::Secrets, String],
+        default:  Odsee::Secrets.new(node[:odsee][:agent_password]).freeze
     end
 
     # A file containing the certificate database password.
@@ -67,8 +69,9 @@ module Odsee
     #
     # @api private
     def cert_passwd(arg = nil)
-      set_or_return :cert_passwd, arg, kind_of: [Odsee::Secrets, String],
-        default: Odsee::Secrets.new(node[:odsee][:cert_password]).freeze
+      set_or_return :cert_passwd, arg,
+        kind_of: [Odsee::Secrets, String],
+        default:  Odsee::Secrets.new(node[:odsee][:cert_password]).freeze
     end
   end
 
@@ -154,7 +157,7 @@ module Odsee
     #   the result of evaluating the optional block
     #
     # @api public
-    def tmp(*args, &block)
+    def tmp(&_block)
       @lock.synchronize do
         atomic_write(@tmpfile, @secret) unless valid?
         yield @path if block_given?
@@ -184,10 +187,10 @@ module Odsee
     #
     # @api public
     def inspect
-      instance_variables.inject([
+      instance_variables.each_with_object([
         "\n#<#{self.class}:0x#{object_id.to_s(16)}>",
         "\tInstance variables:"
-      ]) do |result, item|
+      ]) do |item, result|
         result << "\t\t#{item} = #{instance_variable_get(item)}"
         result
       end.join("\n")
@@ -251,7 +254,10 @@ module Odsee
       FileUtils.mv(tmp_file.path, file)
       begin
         ::File.chmod(00400, file)
+
+        # rubocop:disable Lint/HandleExceptions
       rescue Errno::EPERM, Errno::EACCES
+        # rubocop:enable Lint/HandleExceptions
         # Changing file ownership/permissions failed
       end
     ensure
@@ -271,18 +277,18 @@ module Odsee
     #   the result of evaluating the optional block
     #
     # @api private
-    def lock_file(file, &block)
+    def lock_file(file, &_block)
       if ::File.exist?(file)
         ::File.open(file, 'r+') do |f|
           begin
             f.flock ::File::LOCK_EX
-            yield
+            yield if block_given?
           ensure
             f.flock ::File::LOCK_UN
           end
         end
       else
-        yield
+        yield if block_given?
       end
     end
 
@@ -311,7 +317,7 @@ module Odsee
       when :decrypt
         cipher.decrypt
       else
-        fail "Bad cipher direction #{direction}"
+        raise "Bad cipher direction #{direction}"
       end
       cipher.key = encrypt_key(passwd, options)
       cipher
@@ -336,7 +342,7 @@ module Odsee
     # @api private
     def encrypt_key(passwd, _options = {})
       passwd = passwd.to_s
-      fail 'Missing encryption password!' if passwd.empty?
+      raise 'Missing encryption password!' if passwd.empty?
       Digest::SHA256.digest(passwd)
     end
   end

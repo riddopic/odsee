@@ -25,12 +25,12 @@ single_include 'garcon::default'
 concurrent 'ODSEE Prerequisite Packages' do
   block do
     monitor.synchronize do
-      %w[gtk2-engines gtk2 libgcc glibc].each do |pkg|
+      %w(gtk2-engines gtk2 libgcc glibc).each do |pkg|
         package pkg
       end
 
-      %w[gtk2-engines.i686 gtk2.i686 libgcc.i686 glibc.i686 libXtst.i686
-         libcanberra-gtk2.i686 PackageKit-gtk-module.i686].each do |pkg|
+      %w(gtk2-engines.i686 gtk2.i686 libgcc.i686 glibc.i686 libXtst.i686
+         libcanberra-gtk2.i686 PackageKit-gtk-module.i686).each do |pkg|
         package pkg
       end
     end

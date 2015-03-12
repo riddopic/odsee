@@ -25,6 +25,8 @@ require 'base64'
 require 'securerandom'
 require 'tempfile'
 
+# Where helpers of methods go to be shared by all.
+#
 module Odsee
   # A set of helper methods shared by all resources and providers.
   #

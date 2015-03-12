@@ -69,7 +69,7 @@ class Chef::Provider::Dsconf < Chef::Provider::LWRPBase
     @current_resource.name(@new_resource.name)
 
     unless ::File.exist?(which(@resource_name.to_s))
-      fail Odsee::Exceptions::ResourceNotFound
+      raise Odsee::Exceptions::ResourceNotFound
     end
 
     @current_resource.created(suffix_created?)

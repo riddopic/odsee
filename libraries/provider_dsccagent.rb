@@ -68,7 +68,7 @@ class Chef::Provider::Dsccagent < Chef::Provider::LWRPBase
     @current_resource.path(@new_resource.path)
 
     unless ::File.exist?(which(@resource_name.to_s))
-      fail Odsee::Exceptions::ProviderResourceNotFound
+      raise Odsee::Exceptions::ProviderResourceNotFound
     end
 
     @current_resource.created(created?)

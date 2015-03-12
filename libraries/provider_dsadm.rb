@@ -64,7 +64,7 @@ class Chef::Provider::Dsadm < Chef::Provider::LWRPBase
     @current_resource.instance_path(@new_resource.instance_path)
 
     unless ::File.exist?(which(@resource_name.to_s))
-      fail Odsee::Exceptions::ResourceNotFound
+      raise Odsee::Exceptions::ResourceNotFound
     end
 
     @current_resource.created(created?)

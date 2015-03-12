@@ -24,6 +24,8 @@ module Odsee
   # A set of helper methods shared by all resources and providers.
   #
   class LDAP
+    class LDAPBindError < RuntimeError; end
+
     # @!attribute [rw] ldap
     #   @return [Odsee::LDAP] authenticated Odsee::LDAP connection object
     # attr_accessor :ldap
@@ -76,18 +78,18 @@ module Odsee
 
       @ldap = Net::LDAP.new(host: @host, port: @port, auth: @auth)
       unless ldap.get_operation_result.message =~ /Success/i
-        fail LDAPBindError.new ldap.get_operation_result.message
+        raise LDAPBindError, ldap.get_operation_result.message
       end
     end
 
-    def find(id)
-      filter = Net::LDAP::Filter.eq("cn", "user1")
-      treebase = "dc=nodomain"
+    def find(id, cn, dc)
+      filter = Net::LDAP::Filter.eq(cn, id)
+      treebase = "dc=#{dc}"
 
-      ldap.search(:base => treebase, :filter => filter) do |entry|
+      ldap.search(base: treebase, filter: filter) do |entry|
         puts "DN: #{entry.dn} is part of the following groups:"
-        check = Net::LDAP::Filter.eq("member", entry.dn)
-        groups = ldap.search(:base => treebase, :filter => check)
+        check = Net::LDAP::Filter.eq('member', entry.dn)
+        groups = ldap.search(base: treebase, filter: check)
         groups.each { |group| puts group.cn }
       end
     end
@@ -112,7 +114,7 @@ module Odsee
     def bind(host, port, auth)
       ldap = Net::LDAP.new(host: host, port: port, auth: auth)
       unless ldap.get_operation_result.message =~ /Success/i
-        fail LDAPBindError.new ldap.get_operation_result.message
+        raise LDAPBindError, ldap.get_operation_result.message
       end
       ldap
     end
@@ -139,13 +141,13 @@ module Odsee
       filter = filter.nil? ? Net::LDAP::Filter.eq('objectClass', '*') : filter
 
       scope = case
-      when scope == 'base'
-        Net::LDAP::SearchScope_BaseObject
-      when scope == 'one'
-        Net::LDAP::SearchScope_SingleLevel
-      else
-        Net::LDAP::SearchScope_WholeSubtree
-      end
+              when scope == 'base'
+                Net::LDAP::SearchScope_BaseObject
+              when scope == 'one'
+                Net::LDAP::SearchScope_SingleLevel
+              else
+                Net::LDAP::SearchScope_WholeSubtree
+              end
 
       scope = scope.nil? ? Net::LDAP::SearchScope_BaseObject : scope
       attrs = attrs.nil? ? ['*'] : attrs

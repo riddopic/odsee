@@ -63,7 +63,7 @@ class Chef::Provider::Dsccreg < Chef::Provider::LWRPBase
     @current_resource.path(@new_resource.path)
 
     unless ::File.exist?(which(@resource_name.to_s))
-      fail Odsee::Exceptions::ResourceNotFound
+      raise Odsee::Exceptions::ResourceNotFound
     end
 
     @current_resource.servers(check_for(:servers, @new_resource.path))

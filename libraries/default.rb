@@ -42,7 +42,7 @@ module Odsee
     #
     # @api private
     def lock
-      @@lock ||= Monitor.new
+      @lock ||= Monitor.new
     end
 
     # Wraps shell_out in a monitor for thread safety.

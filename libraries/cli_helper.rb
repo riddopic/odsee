@@ -208,8 +208,7 @@ module Odsee
         reg = registry(instance.to_sym)
         reg.nil? ? false : reg[:ipath] == path
       else
-        fail InvalidRegistryType.new "Unknown instance type `#{instance}`; " \
-          'only `:agents` or `:servers` instances are supported'
+        raise InvalidRegistryType, "Unknown instance type `#{instance}`"
       end
     end
 

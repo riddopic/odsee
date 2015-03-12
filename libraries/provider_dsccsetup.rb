@@ -61,7 +61,7 @@ class Chef::Provider::Dsccsetup < Chef::Provider::LWRPBase
     @current_resource.name(@new_resource.name)
 
     unless ::File.exist?(which(@resource_name.to_s))
-      fail Odsee::Exceptions::ResourceNotFound
+      raise Odsee::Exceptions::ResourceNotFound
     end
 
     @current_resource.created(ads_created?)
@@ -147,12 +147,12 @@ class Chef::Provider::Dsccsetup < Chef::Provider::LWRPBase
   # @api private
   def do_prerequisite
     lock.synchronize do
-      %w[gtk2-engines gtk2 libgcc glibc].each do |pkg|
+      %w(gtk2-engines gtk2 libgcc glibc).each do |pkg|
         package(pkg) { action :nothing }.run_action(:install)
       end
 
-      %w[gtk2-engines.i686 gtk2.i686 libgcc.i686 glibc.i686 libXtst.i686
-         libcanberra-gtk2.i686 PackageKit-gtk-module.i686].each do |pkg|
+      %w(gtk2-engines.i686 gtk2.i686 libgcc.i686 glibc.i686 libXtst.i686
+         libcanberra-gtk2.i686 PackageKit-gtk-module.i686).each do |pkg|
         package(pkg) { action :nothing }.run_action(:install)
       end
     end
