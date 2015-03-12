@@ -242,8 +242,8 @@ class Chef::Provider::Dsconf < Chef::Provider::LWRPBase
   # @api public
   def action_import
     if @current_resource.empty
-      converge_by "Populate #{new_resource.suffix} with LDIF content from " \
-                  "#{new_resource.ldif_file}" do
+      converge_by "Populate #{new_resource.suffix} with LDIF content " \
+                  "from #{new_resource.ldif_file}" do
         new_resource.admin_passwd.tmp do |__p__|
           dsconf :import,
                  new_resource._?(:hostname,     '-H'),

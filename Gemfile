@@ -2,35 +2,34 @@
 
 source 'https://rubygems.org'
 
-gem 'serverspec'
-
-group :development do
-  gem 'knife-cookbook-doc'
-
-  gem 'inch'
-  gem 'yard'
-  gem 'yardstick'
-  gem 'yard-redcarpet-ext'
-  gem 'redcarpet'
-  gem 'github-markup'
-  gem 'did_you_mean'
-
-  gem 'guard'
-  gem 'guard-shell'
-  gem 'guard-yard'
-  gem 'guard-rubocop'
-  gem 'guard-foodcritic'
-  gem 'guard-kitchen'
-  gem 'guard-rspec'
-  gem 'ruby_gntp'
+group :lint do
+  gem 'foodcritic'
+  gem 'rubocop'
+  gem 'rainbow'
 end
 
-gem 'kitchen-sync'
-gem 'test-kitchen'
-gem 'kitchen-ec2'
-gem 'kitchen-vagrant'
-gem 'kitchen-docker'
-gem 'hoodie', '>= 0.4.3'
+group :unit do
+  gem 'berkshelf'
+  gem 'chefspec'
+end
+
+group :kitchen_common do
+  gem 'test-kitchen'
+  gem 'kitchen-sync'
+end
+
+group :kitchen_vagrant do
+  gem 'kitchen-vagrant'
+end
+
+group :kitchen_docker do
+  gem 'kitchen-docker'
+end
+
+group :kitchen_cloud do
+  gem 'kitchen-digital_ocean'
+  gem 'kitchen-ec2'
+end
 
 group :plugins do
   gem 'vagrant-berkshelf'
@@ -39,4 +38,20 @@ group :plugins do
   gem 'vagrant-omnibus'
 end
 
-gem 'fuubar', group: [:development, :unit]
+group :development do
+  gem 'hoodie', '>= 0.4.3'
+  gem 'ruby_gntp'
+  gem 'rb-fsevent'
+  gem 'growl'
+  gem 'guard'
+  gem 'guard-kitchen'
+  gem 'guard-foodcritic'
+  gem 'guard-rubocop'
+  gem 'guard-rspec'
+  gem 'guard-shell'
+  gem 'guard-yard'
+  gem 'yardstick'
+  gem 'inch'
+  gem 'yard'
+  gem 'rake'
+end

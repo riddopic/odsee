@@ -85,12 +85,10 @@ module Odsee
       treebase = "dc=nodomain"
 
       ldap.search(:base => treebase, :filter => filter) do |entry|
-          puts "DN: #{entry.dn} is part of the following groups:"
-          check = Net::LDAP::Filter.eq("member", entry.dn)
-          groups = ldap.search(:base => treebase, :filter => check)
-          groups.each do |group|
-              puts "#{group.cn}"
-          end
+        puts "DN: #{entry.dn} is part of the following groups:"
+        check = Net::LDAP::Filter.eq("member", entry.dn)
+        groups = ldap.search(:base => treebase, :filter => check)
+        groups.each { |group| puts group.cn }
       end
     end
 
