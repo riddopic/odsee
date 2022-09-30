@@ -4,12 +4,12 @@ source 'https://rubygems.org'
 
 group :lint do
   gem 'foodcritic'
-  gem 'rubocop'
+  gem 'rubocop', '>= 0.49.0'
   gem 'rainbow'
 end
 
 group :unit do
-  gem 'berkshelf'
+  gem 'berkshelf', '>= 4.2.3'
   gem 'chefspec'
 end
 
@@ -34,7 +34,7 @@ end
 group :plugins do
   gem 'vagrant-berkshelf'
   gem 'vagrant-cachier'
-  gem 'vagrant-chef-zero'
+  gem 'vagrant-chef-zero', '>= 2.0.0'
   gem 'vagrant-omnibus'
 end
 
@@ -51,7 +51,7 @@ group :development do
   gem 'guard-shell'
   gem 'guard-yard'
   gem 'yardstick'
-  gem 'inch'
-  gem 'yard'
-  gem 'rake'
+  gem 'inch', '>= 0.8.0'
+  gem 'yard', '>= 0.9.20'
+  gem 'rake', '>= 12.3.3'
 end
