@@ -9,7 +9,7 @@ group :lint do
 end
 
 group :unit do
-  gem 'berkshelf'
+  gem 'berkshelf', '>= 7.0.0'
   gem 'chefspec'
 end
 
@@ -34,7 +34,7 @@ end
 group :plugins do
   gem 'vagrant-berkshelf'
   gem 'vagrant-cachier'
-  gem 'vagrant-chef-zero'
+  gem 'vagrant-chef-zero', '>= 2.0.0'
   gem 'vagrant-omnibus'
 end
 
