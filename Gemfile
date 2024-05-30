@@ -3,7 +3,7 @@
 source 'https://rubygems.org'
 
 group :lint do
-  gem 'foodcritic'
+  gem 'foodcritic', '>= 5.0.0'
   gem 'rubocop'
   gem 'rainbow'
 end
@@ -28,7 +28,7 @@ end
 
 group :kitchen_cloud do
   gem 'kitchen-digital_ocean'
-  gem 'kitchen-ec2'
+  gem 'kitchen-ec2', '>= 0.9.0'
 end
 
 group :plugins do
@@ -45,7 +45,7 @@ group :development do
   gem 'growl'
   gem 'guard'
   gem 'guard-kitchen'
-  gem 'guard-foodcritic'
+  gem 'guard-foodcritic', '>= 1.1.0'
   gem 'guard-rubocop'
   gem 'guard-rspec'
   gem 'guard-shell'
