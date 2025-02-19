@@ -28,7 +28,7 @@ end
 
 group :kitchen_cloud do
   gem 'kitchen-digital_ocean'
-  gem 'kitchen-ec2'
+  gem 'kitchen-ec2', '>= 0.9.0'
 end
 
 group :plugins do
