@@ -3,13 +3,13 @@
 source 'https://rubygems.org'
 
 group :lint do
-  gem 'foodcritic'
+  gem 'foodcritic', '>= 5.0.0'
   gem 'rubocop'
   gem 'rainbow'
 end
 
 group :unit do
-  gem 'berkshelf'
+  gem 'berkshelf', '>= 4.1.0'
   gem 'chefspec'
 end
 
@@ -34,7 +34,7 @@ end
 group :plugins do
   gem 'vagrant-berkshelf'
   gem 'vagrant-cachier'
-  gem 'vagrant-chef-zero'
+  gem 'vagrant-chef-zero', '>= 1.0.1'
   gem 'vagrant-omnibus'
 end
 
@@ -43,15 +43,15 @@ group :development do
   gem 'ruby_gntp'
   gem 'rb-fsevent'
   gem 'growl'
-  gem 'guard'
-  gem 'guard-kitchen'
-  gem 'guard-foodcritic'
-  gem 'guard-rubocop'
-  gem 'guard-rspec'
-  gem 'guard-shell'
-  gem 'guard-yard'
+  gem 'guard', '>= 2.12.5'
+  gem 'guard-kitchen', '>= 0.1.0'
+  gem 'guard-foodcritic', '>= 1.1.0'
+  gem 'guard-rubocop', '>= 1.3.0'
+  gem 'guard-rspec', '>= 4.5.1'
+  gem 'guard-shell', '>= 0.7.2'
+  gem 'guard-yard', '>= 2.2.0'
   gem 'yardstick'
-  gem 'inch'
+  gem 'inch', '>= 0.8.0'
   gem 'yard'
   gem 'rake'
 end
