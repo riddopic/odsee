@@ -201,11 +201,11 @@ GEM
     hitimes (1.2.2)
     hoodie (0.5.1)
       hitimes
-    inch (0.5.10)
+    inch (0.8.0)
       pry
       sparkr (>= 0.2.0)
       term-ansicolor
-      yard (~> 0.8.7.5)
+      yard (~> 0.9.12)
     inflecto (0.0.2)
     ipaddress (0.8.0)
     json (1.7.7)
@@ -374,7 +374,7 @@ GEM
       hashie (>= 2.0.2, < 3.0.0)
     wmi-lite (1.0.0)
     yajl-ruby (1.2.1)
-    yard (0.8.7.6)
+    yard (0.9.42)
     yardstick (0.9.9)
       yard (~> 0.8, >= 0.8.7.2)
 
